@@ -1,14 +1,421 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRYPTO VIBE | Professional Crypto Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+        }
+        .tv-chart-container {
+            height: 500px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 10px;
+        }
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
+        .portfolio-slot-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .profit-border { border-color: #10b981 !important; }
+        .loss-border { border-color: #ef4444 !important; }
+    </style>
 </head>
-<body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+<body class="text-gray-100 flex flex-col min-h-screen">
+
+    <!-- Top Ticker Tape -->
+    <div class="w-full border-b border-gray-800">
+        <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+            "symbols": [
+                {"proName": "BINANCE:BTCUSDT", "title": "BTC"},
+                {"proName": "BINANCE:ETHUSDT", "title": "ETH"},
+                {"proName": "BINANCE:SOLUSDT", "title": "SOL"},
+                {"proName": "BINANCE:XRPUSDT", "title": "XRP"},
+                {"proName": "BINANCE:DOGEUSDT", "title": "DOGE"}
+            ],
+            "showSymbolLogo": true,
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "displayMode": "adaptive",
+            "locale": "ko"
+            }
+            </script>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="border-b border-gray-800 bg-[#0d1117]/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-[1600px] mx-auto px-4 h-14 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-xl font-bold tracking-tighter text-blue-500 italic">CRYPTO <span class="text-white">VIBE</span></span>
+            </div>
+            <div class="flex items-center space-x-6 text-xs font-medium text-gray-400">
+                <div class="flex items-center space-x-1">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span>Global Market Live</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-[1600px] mx-auto w-full px-4 py-4 space-y-4">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <!-- Left: Main Chart (3/4) -->
+            <div class="lg:col-span-3 space-y-4">
+                <section class="bg-[#161b22] border border-gray-800 rounded-xl overflow-hidden shadow-2xl flex flex-col">
+                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-[#0d1117]">
+                        <h2 id="current-symbol-title" class="font-semibold text-sm flex items-center">
+                            BINANCE:BTCUSDT
+                        </h2>
+                        <div class="text-[10px] text-gray-500">
+                            TIMEZONE: ASIA/SEOUL
+                        </div>
+                    </div>
+                    <div id="tv_chart_container" class="tv-chart-container w-full">
+                        <!-- TradingView Widget -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right: Market List & Tabs (1/4) -->
+            <div class="lg:col-span-1">
+                <section class="bg-[#161b22] border border-gray-800 rounded-xl overflow-hidden shadow-2xl flex flex-col h-[552px]">
+                    <div class="flex border-b border-gray-800 bg-[#0d1117]">
+                        <button onclick="switchMarketTab('L1L2')" id="mtab-L1L2" class="flex-1 py-3 text-xs font-semibold tab-active hover:bg-gray-800 transition-colors">L1/L2</button>
+                        <button onclick="switchMarketTab('DeFi')" id="mtab-DeFi" class="flex-1 py-3 text-xs font-semibold text-gray-400 hover:bg-gray-800 transition-colors">DeFi</button>
+                        <button onclick="switchMarketTab('Meme')" id="mtab-Meme" class="flex-1 py-3 text-xs font-semibold text-gray-400 hover:bg-gray-800 transition-colors">Meme</button>
+                    </div>
+                    <div class="p-3 border-b border-gray-800">
+                        <input type="text" id="coin-filter" placeholder="Filter symbols..." class="w-full bg-[#0d1117] border border-gray-700 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div id="coin-list" class="flex-grow overflow-y-auto custom-scrollbar p-1">
+                        <!-- JS populated -->
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Portfolio Simulator Section -->
+        <section class="bg-[#161b22] border border-gray-800 rounded-xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-gray-800 bg-[#0d1117] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-2">
+                    <h3 class="font-bold text-blue-500 uppercase tracking-wider text-sm">Portfolio Simulator</h3>
+                    <div class="flex space-x-1" id="portfolio-tabs">
+                        <button onclick="switchPortfolio(0)" id="pslot-0" class="portfolio-slot-btn px-4 py-1.5 rounded-lg border border-gray-700 text-xs font-bold bg-[#1c2128]">Slot 1</button>
+                        <button onclick="switchPortfolio(1)" id="pslot-1" class="portfolio-slot-btn px-4 py-1.5 rounded-lg border border-gray-700 text-xs font-bold bg-[#1c2128] opacity-50">Slot 2</button>
+                        <button onclick="switchPortfolio(2)" id="pslot-2" class="portfolio-slot-btn px-4 py-1.5 rounded-lg border border-gray-700 text-xs font-bold bg-[#1c2128] opacity-50">Slot 3</button>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-[10px] text-gray-500 uppercase">Total Balance</p>
+                        <p id="total-balance" class="text-xl font-bold leading-none">$0.00</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-gray-500 uppercase">Total Profit</p>
+                        <p id="total-profit" class="text-xl font-bold leading-none">$0.00 (0%)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Add to Portfolio -->
+                <div class="lg:col-span-1 space-y-4">
+                    <h4 class="text-xs font-bold text-gray-400 uppercase">Add Asset</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[10px] text-gray-500 mb-1">Coin Asset</label>
+                            <select id="p-coin-select" class="w-full bg-[#0d1117] border border-gray-700 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
+                                <!-- Populated from coinData -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-500 mb-1">Buy Price (Avg.)</label>
+                            <input type="number" id="p-buy-price" placeholder="0.00" class="w-full bg-[#0d1117] border border-gray-700 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-gray-500 mb-1">Quantity</label>
+                            <input type="number" id="p-quantity" placeholder="0.00" class="w-full bg-[#0d1117] border border-gray-700 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
+                        </div>
+                        <button onclick="addAsset()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-all">Add to Slot</button>
+                    </div>
+                </div>
+
+                <!-- Portfolio List -->
+                <div class="lg:col-span-2 overflow-x-auto">
+                    <h4 class="text-xs font-bold text-gray-400 uppercase mb-4">Current Assets</h4>
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="text-gray-500 border-b border-gray-800">
+                                <th class="pb-2 font-medium">Asset</th>
+                                <th class="pb-2 font-medium">Avg. Buy</th>
+                                <th class="pb-2 font-medium">Current Price</th>
+                                <th class="pb-2 font-medium">Profit/Loss</th>
+                                <th class="pb-2 font-medium text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolio-list-body">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                    <div id="empty-msg" class="text-center py-10 text-gray-600 italic hidden">No assets in this slot.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-gray-800 py-6">
+        <div class="max-w-[1600px] mx-auto px-4 text-center text-gray-500 text-[10px]">
+            <p>&copy; 2026 CRYPTO VIBE. All data stored locally. Pricing via CoinGecko.</p>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript">
+        const coinData = {
+            "L1L2": [
+                { symbol: "BINANCE:BTCUSDT", name: "Bitcoin", sub: "BTC", id: "bitcoin" },
+                { symbol: "BINANCE:ETHUSDT", name: "Ethereum", sub: "ETH", id: "ethereum" },
+                { symbol: "BINANCE:SOLUSDT", name: "Solana", sub: "SOL", id: "solana" },
+                { symbol: "BINANCE:ADAUSDT", name: "Cardano", sub: "ADA", id: "cardano" },
+                { symbol: "BINANCE:MATICUSDT", name: "Polygon", sub: "MATIC", id: "polygon-ecosystem" }
+            ],
+            "DeFi": [
+                { symbol: "BINANCE:UNIUSDT", name: "Uniswap", sub: "UNI", id: "uniswap" },
+                { symbol: "BINANCE:AAVEUSDT", name: "Aave", sub: "AAVE", id: "aave" },
+                { symbol: "BINANCE:LINKUSDT", name: "Chainlink", sub: "LINK", id: "chainlink" },
+                { symbol: "BINANCE:CAKEUSDT", name: "PancakeSwap", sub: "CAKE", id: "pancakeswap-token" }
+            ],
+            "Meme": [
+                { symbol: "BINANCE:DOGEUSDT", name: "Dogecoin", sub: "DOGE", id: "dogecoin" },
+                { symbol: "BINANCE:SHIBUSDT", name: "Shiba Inu", sub: "SHIB", id: "shiba-inu" },
+                { symbol: "BINANCE:PEPEUSDT", name: "Pepe", sub: "PEPE", id: "pepe" },
+                { symbol: "BINANCE:FLOKIUSDT", name: "Floki", sub: "FLOKI", id: "floki" }
+            ]
+        };
+
+        let currentMarketTab = "L1L2";
+        let currentPortfolioSlot = 0;
+        let portfolios = JSON.parse(localStorage.getItem('cv_portfolios')) || [[], [], []];
+        let currentPrices = {};
+
+        function initChart(symbol) {
+            document.getElementById('current-symbol-title').innerText = symbol;
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": "D",
+                "timezone": "Asia/Seoul",
+                "theme": "dark",
+                "style": "1",
+                "locale": "ko",
+                "toolbar_bg": "#0d1117",
+                "enable_publishing": false,
+                "container_id": "tv_chart_container",
+                "market": "crypto"
+            });
+        }
+
+        function renderMarketList() {
+            const listContainer = document.getElementById('coin-list');
+            const filter = document.getElementById('coin-filter').value.toLowerCase();
+            listContainer.innerHTML = '';
+
+            coinData[currentMarketTab].forEach(coin => {
+                if (coin.name.toLowerCase().includes(filter) || coin.sub.toLowerCase().includes(filter)) {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between p-3 hover:bg-gray-800 rounded-lg cursor-pointer transition-colors group mb-1';
+                    item.onclick = () => initChart(coin.symbol);
+                    
+                    const logoUrl = `https://s3-symbol-logo.tradingview.com/${coin.sub}.svg`;
+
+                    item.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center overflow-hidden border border-gray-700">
+                                <img src="${logoUrl}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <span class="hidden w-full h-full items-center justify-center bg-gray-700 text-[10px] font-bold text-gray-300 uppercase">${coin.sub[0]}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold leading-tight">${coin.sub}</span>
+                                <span class="text-[10px] text-gray-500 leading-tight">${coin.name}</span>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-gray-500 group-hover:text-blue-500 font-medium italic">BINANCE</div>
+                    `;
+                    listContainer.appendChild(item);
+                }
+            });
+        }
+
+        function populateCoinSelect() {
+            const select = document.getElementById('p-coin-select');
+            select.innerHTML = '';
+            Object.values(coinData).flat().forEach(coin => {
+                const opt = document.createElement('option');
+                opt.value = JSON.stringify({id: coin.id, sub: coin.sub});
+                opt.innerText = `${coin.sub} (${coin.name})`;
+                select.appendChild(opt);
+            });
+        }
+
+        async function fetchPrices() {
+            const ids = [...new Set(portfolios.flat().map(a => a.id))].join(',');
+            if (!ids) return;
+            try {
+                const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+                currentPrices = await res.json();
+                renderPortfolio();
+                updateSlotBorders();
+            } catch (e) { console.error("Price fetch failed", e); }
+        }
+
+        function addAsset() {
+            const coinInfo = JSON.parse(document.getElementById('p-coin-select').value);
+            const buyPrice = parseFloat(document.getElementById('p-buy-price').value);
+            const quantity = parseFloat(document.getElementById('p-quantity').value);
+
+            if (!buyPrice || !quantity) return alert("Please enter valid price and quantity.");
+
+            portfolios[currentPortfolioSlot].push({
+                id: coinInfo.id,
+                sub: coinInfo.sub,
+                buyPrice,
+                quantity
+            });
+
+            saveAndRender();
+            fetchPrices();
+        }
+
+        function removeAsset(index) {
+            portfolios[currentPortfolioSlot].splice(index, 1);
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('cv_portfolios', JSON.stringify(portfolios));
+            renderPortfolio();
+            updateSlotBorders();
+        }
+
+        function renderPortfolio() {
+            const listBody = document.getElementById('portfolio-list-body');
+            const emptyMsg = document.getElementById('empty-msg');
+            listBody.innerHTML = '';
+            
+            let totalValue = 0;
+            let totalCost = 0;
+
+            const currentSlot = portfolios[currentPortfolioSlot];
+            
+            if (currentSlot.length === 0) {
+                emptyMsg.classList.remove('hidden');
+            } else {
+                emptyMsg.classList.add('hidden');
+                currentSlot.forEach((asset, idx) => {
+                    const currentPrice = currentPrices[asset.id]?.usd || 0;
+                    const currentValue = currentPrice * asset.quantity;
+                    const cost = asset.buyPrice * asset.quantity;
+                    const profit = currentValue - cost;
+                    const profitPct = cost > 0 ? (profit / cost) * 100 : 0;
+
+                    totalValue += currentValue;
+                    totalCost += cost;
+
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors';
+                    row.innerHTML = `
+                        <td class="py-4 flex items-center space-x-2">
+                            <span class="font-bold">${asset.sub}</span>
+                            <span class="text-[10px] text-gray-500">${asset.quantity} units</span>
+                        </td>
+                        <td class="py-4">$${asset.buyPrice.toLocaleString()}</td>
+                        <td class="py-4">$${currentPrice.toLocaleString()}</td>
+                        <td class="py-4 ${profit >= 0 ? 'text-green-500' : 'text-red-500'} font-semibold">
+                            $${profit.toLocaleString()} (${profitPct.toFixed(2)}%)
+                        </td>
+                        <td class="py-4 text-right">
+                            <button onclick="removeAsset(${idx})" class="text-gray-600 hover:text-red-500 transition-colors">✕</button>
+                        </td>
+                    `;
+                    listBody.appendChild(row);
+                });
+            }
+
+            const totalProfit = totalValue - totalCost;
+            const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
+
+            document.getElementById('total-balance').innerText = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            const tpElement = document.getElementById('total-profit');
+            tpElement.innerText = `$${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2})} (${totalProfitPct.toFixed(2)}%)`;
+            tpElement.className = `text-xl font-bold leading-none ${totalProfit >= 0 ? 'text-green-500' : 'text-red-500'}`;
+        }
+
+        function switchPortfolio(slot) {
+            document.getElementById(`pslot-${currentPortfolioSlot}`).classList.add('opacity-50');
+            document.getElementById(`pslot-${currentPortfolioSlot}`).classList.remove('border-blue-500', 'bg-blue-900/20');
+            
+            currentPortfolioSlot = slot;
+            
+            document.getElementById(`pslot-${currentPortfolioSlot}`).classList.remove('opacity-50');
+            document.getElementById(`pslot-${currentPortfolioSlot}`).classList.add('border-blue-500', 'bg-blue-900/20');
+            
+            renderPortfolio();
+        }
+
+        function updateSlotBorders() {
+            portfolios.forEach((slot, idx) => {
+                let cost = 0, val = 0;
+                slot.forEach(a => {
+                    cost += a.buyPrice * a.quantity;
+                    val += (currentPrices[a.id]?.usd || 0) * a.quantity;
+                });
+                const btn = document.getElementById(`pslot-${idx}`);
+                btn.classList.remove('profit-border', 'loss-border');
+                if (slot.length > 0) {
+                    if (val >= cost) btn.classList.add('profit-border');
+                    else btn.classList.add('loss-border');
+                }
+            });
+        }
+
+        function switchMarketTab(tabId) {
+            document.getElementById(`mtab-${currentMarketTab}`).classList.remove('tab-active');
+            document.getElementById(`mtab-${currentMarketTab}`).classList.add('text-gray-400');
+            currentMarketTab = tabId;
+            document.getElementById(`mtab-${currentMarketTab}`).classList.add('tab-active');
+            document.getElementById(`mtab-${currentMarketTab}`).classList.remove('text-gray-400');
+            renderMarketList();
+        }
+
+        document.getElementById('coin-filter').addEventListener('input', renderMarketList);
+
+        window.onload = () => {
+            initChart("BINANCE:BTCUSDT");
+            renderMarketList();
+            populateCoinSelect();
+            switchPortfolio(0);
+            fetchPrices();
+            setInterval(fetchPrices, 30000); // 30s update
+        };
+    </script>
 </body>
 </html>
