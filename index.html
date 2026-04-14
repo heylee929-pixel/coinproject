@@ -44,98 +44,106 @@
                 {"proName": "BINANCE:BTCUSDT", "title": "BTC"},
                 {"proName": "BINANCE:ETHUSDT", "title": "ETH"},
                 {"proName": "BINANCE:SOLUSDT", "title": "SOL"},
-                {"proName": "BINANCE:XRPUSDT", "title": "XRP"}
+                {"proName": "BINANCE:XRPUSDT", "title": "XRP"},
+                {"proName": "BINANCE:DOGEUSDT", "title": "DOGE"},
+                {"proName": "BINANCE:ADAUSDT", "title": "ADA"},
+                {"proName": "BINANCE:LINKUSDT", "title": "LINK"}
             ],
-            "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "ko"
+            "showSymbolLogo": true,
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "displayMode": "adaptive",
+            "locale": "ko"
         }
         </script>
     </div>
 
     <!-- 헤더 -->
     <header class="border-b border-gray-800 bg-[#0d1117]/90 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-[1600px] mx-auto px-4 h-14 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="jam-accent">
-                    <path d="M6 8C6 6.89543 6.89543 6 8 6H16C17.1046 6 18 6.89543 18 8V18C18 20.2091 16.2091 22 14 22H10C7.79086 22 6 20.2091 6 18V8Z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                <span class="text-xl font-bold tracking-tighter italic uppercase">CRYPTO <span class="jam-accent font-extrabold">JAM</span></span>
+        <div class="max-w-[1600px] mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-1.5 bg-pink-500/10 rounded-lg">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="jam-accent">
+                        <path d="M6 8C6 6.89543 6.89543 6 8 6H16C17.1046 6 18 6.89543 18 8V18C18 20.2091 16.2091 22 14 22H10C7.79086 22 6 20.2091 6 18V8Z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2.5"/>
+                    </svg>
+                </div>
+                <span class="text-2xl font-black tracking-tighter italic uppercase">CRYPTO <span class="jam-accent">JAM</span></span>
             </div>
-            <div class="flex items-center space-x-2 text-[10px] text-gray-500 font-bold">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <div class="flex items-center space-x-2 text-[11px] text-gray-500 font-bold tracking-widest">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></span>
                 <span>REAL-TIME ENGINE LIVE</span>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow max-w-[1600px] mx-auto w-full px-4 py-4">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <main class="flex-grow max-w-[1600px] mx-auto w-full px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <!-- [1] Market List -->
             <div class="lg:col-span-2">
-                <section class="bg-[#161b22] border border-gray-800 rounded-xl overflow-hidden flex flex-col h-[calc(100vh-140px)] shadow-xl">
-                    <div class="flex border-b border-gray-800 bg-[#0d1117]">
-                        <button onclick="JamApp.switchMarket('L1L2')" id="mtab-L1L2" class="flex-1 py-3 text-[10px] font-bold tab-active transition-all">L1/L2</button>
-                        <button onclick="JamApp.switchMarket('DeFi')" id="mtab-DeFi" class="flex-1 py-3 text-[10px] font-bold text-gray-500 hover:text-gray-300">DeFi</button>
-                        <button onclick="JamApp.switchMarket('Meme')" id="mtab-Meme" class="flex-1 py-3 text-[10px] font-bold text-gray-500 hover:text-gray-300">Meme</button>
+                <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-160px)] shadow-2xl">
+                    <div class="flex border-b border-gray-800 bg-[#0d1117] p-1">
+                        <button onclick="JamApp.switchMarket('L1L2')" id="mtab-L1L2" class="flex-1 py-2.5 text-[11px] font-black tab-active transition-all rounded-lg">L1/L2</button>
+                        <button onclick="JamApp.switchMarket('DeFi')" id="mtab-DeFi" class="flex-1 py-2.5 text-[11px] font-black text-gray-500 hover:text-gray-300 transition-all">DeFi</button>
+                        <button onclick="JamApp.switchMarket('Meme')" id="mtab-Meme" class="flex-1 py-2.5 text-[11px] font-black text-gray-500 hover:text-gray-300 transition-all">Meme</button>
                     </div>
-                    <div class="p-2 border-b border-gray-800">
-                        <input type="text" id="coin-filter" oninput="JamApp.renderMarketList()" placeholder="Quick Search..." class="w-full bg-[#0d1117] border border-gray-700 rounded px-2 py-1.5 text-[11px] focus:outline-none focus:border-pink-500">
+                    <div class="p-3 border-b border-gray-800">
+                        <input type="text" id="coin-filter" oninput="JamApp.renderMarketList()" placeholder="Quick Search..." class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2 text-[12px] focus:outline-none focus:border-pink-500 transition-colors">
                     </div>
-                    <div id="coin-list" class="flex-grow overflow-y-auto custom-scrollbar p-1"></div>
+                    <div id="coin-list" class="flex-grow overflow-y-auto custom-scrollbar p-2"></div>
                 </section>
             </div>
 
             <!-- [2] Chart & Portfolio -->
-            <div class="lg:col-span-7 space-y-4">
+            <div class="lg:col-span-7 space-y-6">
                 <!-- TradingView Chart -->
-                <section class="bg-[#161b22] border border-gray-800 rounded-xl overflow-hidden shadow-2xl">
-                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-[#0d1117]">
-                        <h2 id="current-symbol-title" class="font-bold text-sm text-pink-500 tracking-tight">BINANCE:BTCUSDT</h2>
-                        <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Global Market Chart</span>
+                <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+                    <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#0d1117]">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-4 jam-bg rounded-full"></div>
+                            <h2 id="current-symbol-title" class="font-black text-sm text-white tracking-tight">BINANCE:BTCUSDT</h2>
+                        </div>
+                        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">Global Market Terminal</span>
                     </div>
                     <div id="tv_chart_container" class="tv-chart-container"></div>
                 </section>
 
                 <!-- Portfolio Manager -->
-                <section class="bg-[#161b22] border border-gray-800 rounded-xl overflow-hidden shadow-xl">
-                    <div class="p-4 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
-                        <div class="flex items-center space-x-4">
-                            <h3 class="font-bold text-pink-500 text-xs uppercase tracking-wider">Portfolio</h3>
-                            <div class="flex space-x-1" id="portfolio-tabs">
-                                <button onclick="JamApp.switchSlot(0)" id="pslot-0" class="px-3 py-1 rounded border border-gray-700 text-[9px] font-bold bg-[#1c2128] hover:border-pink-500 transition-all">SLOT 1</button>
-                                <button onclick="JamApp.switchSlot(1)" id="pslot-1" class="px-3 py-1 rounded border border-gray-700 text-[9px] font-bold bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">SLOT 2</button>
-                                <button onclick="JamApp.switchSlot(2)" id="pslot-2" class="px-3 py-1 rounded border border-gray-700 text-[9px] font-bold bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">SLOT 3</button>
+                <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+                    <div class="p-5 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
+                        <div class="flex items-center space-x-6">
+                            <h3 class="font-black text-pink-500 text-xs uppercase tracking-widest">Portfolio Control</h3>
+                            <div class="flex space-x-2" id="portfolio-tabs">
+                                <button onclick="JamApp.switchSlot(0)" id="pslot-0" class="px-4 py-1.5 rounded-lg border border-gray-700 text-[10px] font-black bg-[#1c2128] hover:border-pink-500 transition-all">SLOT 1</button>
+                                <button onclick="JamApp.switchSlot(1)" id="pslot-1" class="px-4 py-1.5 rounded-lg border border-gray-700 text-[10px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">SLOT 2</button>
+                                <button onclick="JamApp.switchSlot(2)" id="pslot-2" class="px-4 py-1.5 rounded-lg border border-gray-700 text-[10px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">SLOT 3</button>
                             </div>
                         </div>
-                        <div class="flex space-x-6">
+                        <div class="flex space-x-8">
                             <div class="text-right">
-                                <p class="text-[8px] text-gray-500 uppercase">Total Balance</p>
-                                <p id="total-balance" class="text-lg font-black leading-none">$0</p>
+                                <p class="text-[9px] text-gray-500 uppercase font-bold mb-1">Total Value</p>
+                                <p id="total-balance" class="text-xl font-black leading-none">$0</p>
                             </div>
-                            <div class="text-right border-l border-gray-800 pl-6">
-                                <p class="text-[8px] text-gray-500 uppercase">Total Profit</p>
-                                <p id="total-profit-amt" class="text-lg font-black leading-none">$0</p>
-                            </div>
-                            <div class="text-right border-l border-gray-800 pl-6">
-                                <p class="text-[8px] text-gray-500 uppercase">Total ROI</p>
-                                <p id="total-profit" class="text-lg font-black leading-none">0.00%</p>
+                            <div class="text-right border-l border-gray-800 pl-8">
+                                <p class="text-[9px] text-gray-500 uppercase font-bold mb-1">Net Profit</p>
+                                <p id="total-profit-amt" class="text-xl font-black leading-none">$0</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="p-5 grid grid-cols-1 md:grid-cols-4 gap-6">
                         <!-- Add Form -->
-                        <div class="md:col-span-1 space-y-2 border-r border-gray-800 pr-4">
-                            <p class="text-[9px] font-bold text-gray-500 uppercase mb-1">Add New Asset</p>
-                            <select id="p-coin-select" class="w-full bg-[#0d1117] border border-gray-700 rounded px-2 py-2 text-xs focus:outline-none focus:border-pink-500"></select>
-                            <input type="number" id="p-buy-price" placeholder="Entry Price" class="w-full bg-[#0d1117] border border-gray-700 rounded px-2 py-2 text-xs focus:outline-none focus:border-pink-500">
-                            <input type="number" id="p-quantity" placeholder="Amount" class="w-full bg-[#0d1117] border border-gray-700 rounded px-2 py-2 text-xs focus:outline-none focus:border-pink-500">
-                            <button onclick="JamApp.addAsset()" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded text-[11px] font-black uppercase transition-all active:scale-95">Add Asset</button>
+                        <div class="md:col-span-1 space-y-3 border-r border-gray-800 pr-6">
+                            <p class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Add Asset</p>
+                            <select id="p-coin-select" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-pink-500"></select>
+                            <input type="number" id="p-buy-price" placeholder="Entry Price" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
+                            <input type="number" id="p-quantity" placeholder="Amount" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
+                            <button onclick="JamApp.addAsset()" class="w-full jam-bg hover:opacity-90 text-white py-3 rounded-lg text-xs font-black uppercase shadow-lg shadow-pink-500/20 transition-all active:scale-95">Deploy Capital</button>
                         </div>
                         <!-- Asset List -->
                         <div class="md:col-span-3">
-                            <div id="portfolio-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto max-h-[250px] custom-scrollbar pr-1"></div>
-                            <div id="empty-msg" class="text-center py-10 text-gray-600 text-xs italic">Your portfolio is empty.</div>
+                            <div id="portfolio-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto max-h-[280px] custom-scrollbar pr-2"></div>
+                            <div id="empty-msg" class="text-center py-16 text-gray-600 text-xs font-bold italic uppercase tracking-widest">No Active Positions In This Slot</div>
                         </div>
                     </div>
                 </section>
@@ -143,24 +151,23 @@
 
             <!-- [3] News Insights -->
             <div class="lg:col-span-3">
-                <section class="bg-[#161b22] border border-gray-800 rounded-xl overflow-hidden flex flex-col h-[calc(100vh-140px)] shadow-xl">
-                    <div class="p-3 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
+                <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-160px)] shadow-2xl">
+                    <div class="p-4 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
                         <div class="flex items-center space-x-2">
-                            <span class="w-1 h-3 jam-bg rounded-full"></span>
-                            <h3 id="news-title" class="font-bold text-[10px] uppercase tracking-wider">Insights</h3>
+                            <h3 id="news-title" class="font-black text-[11px] uppercase tracking-[0.15em] text-white">BTC INSIGHTS</h3>
                         </div>
-                        <button onclick="JamApp.fetchNews()" class="text-[8px] text-gray-500 hover:text-pink-500 font-bold uppercase transition-colors">Refresh</button>
+                        <button onclick="JamApp.fetchNews()" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-[9px] text-gray-300 font-black uppercase rounded transition-all">Refresh</button>
                     </div>
-                    <div id="news-container" class="p-3 flex-grow overflow-y-auto custom-scrollbar space-y-3"></div>
+                    <div id="news-container" class="p-4 flex-grow overflow-y-auto custom-scrollbar space-y-4"></div>
                 </section>
             </div>
 
         </div>
     </main>
 
-    <footer class="border-t border-gray-800 py-4 bg-[#0d1117]">
-        <div class="max-w-[1600px] mx-auto px-4 text-center text-gray-600 text-[9px] font-bold tracking-widest uppercase">
-            &copy; 2026 CRYPTO JAM. DATA POWERED BY TRADINGVIEW & COINGECKO.
+    <footer class="border-t border-gray-800 py-6 bg-[#0d1117]">
+        <div class="max-w-[1600px] mx-auto px-4 text-center text-gray-600 text-[10px] font-bold tracking-[0.3em] uppercase">
+            &copy; 2026 CRYPTO <span class="text-pink-600">JAM</span> TERMINAL. POWERED BY TRADINGVIEW & COINGECKO.
         </div>
     </footer>
 
@@ -195,14 +202,14 @@
                 portfolios: JSON.parse(localStorage.getItem('jam_data_v2')) || [[], [], []],
                 prices: {},
                 isInitialLoad: true,
-                editingIndex: null // 현재 편집 중인 자산 인덱스
+                editingIndex: null 
             },
 
             // [Initialization]
             init() {
                 this.renderMarketList();
                 this.populateCoinSelect();
-                this.changeChartSymbol(this.state.activeSymbol); // 초기 차트 로드
+                this.changeChartSymbol(this.state.activeSymbol); 
                 this.startPriceSync();
                 console.log("💎 JAM Engine Started Successfully");
             },
@@ -215,14 +222,13 @@
                     : val.toFixed(2);
             },
 
-            // [Chart Logic] 핵심: 차트 심볼 변경 함수
+            // [Chart Logic]
             changeChartSymbol(symbol) {
                 if (!symbol) return;
                 
                 this.state.activeSymbol = symbol;
                 document.getElementById('current-symbol-title').innerText = symbol;
                 
-                // TradingView Widget 로드
                 new TradingView.widget({
                     "autosize": true,
                     "symbol": symbol,
@@ -237,11 +243,11 @@
                     "container_id": "tv_chart_container"
                 });
 
-                // 연동된 데이터 업데이트
                 const coin = this.cryptoList.find(c => c.symbol === symbol);
                 if (coin) this.fetchNews(coin.sub, coin.name);
                 
-                this.renderPortfolio(); // 활성 카드 하이라이트를 위해 리스트 갱신
+                this.renderMarketList(); 
+                this.renderPortfolio(); 
             },
 
             // [Market List Rendering]
@@ -254,19 +260,21 @@
                     .filter(c => c.category === this.state.currentMarket && 
                                 (c.name.toLowerCase().includes(filter) || c.sub.toLowerCase().includes(filter)))
                     .forEach(coin => {
+                        const isActive = coin.symbol === this.state.activeSymbol;
                         const div = document.createElement('div');
-                        div.className = 'flex items-center justify-between p-2 hover:bg-[#1c2128] rounded-lg cursor-pointer transition-all group mb-1 active:scale-95';
+                        div.className = `flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all group mb-1.5 active:scale-[0.98] 
+                                        ${isActive ? 'bg-pink-500/10 border border-pink-500/30 shadow-[0_0_15px_rgba(255,0,122,0.1)]' : 'hover:bg-[#1c2128]'}`;
                         div.onclick = () => this.changeChartSymbol(coin.symbol);
                         div.innerHTML = `
                             <div class="flex items-center space-x-3">
                                 <img src="https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png" 
-                                     class="w-6 h-6 rounded-full border border-gray-700 bg-gray-800" onerror="this.src='https://via.placeholder.com/24/30363d/white?text=${coin.sub[0]}'">
+                                     class="w-7 h-7 rounded-full border border-gray-700 bg-gray-800 p-0.5" onerror="this.src='https://via.placeholder.com/28/30363d/white?text=${coin.sub[0]}'">
                                 <div class="flex flex-col">
-                                    <span class="text-[11px] font-bold group-hover:text-pink-500 transition-colors">${coin.sub}</span>
-                                    <span class="text-[9px] text-gray-500 font-medium">${coin.name}</span>
+                                    <span class="text-[12px] font-black ${isActive ? 'text-pink-500' : 'group-hover:text-pink-500'} transition-colors">${coin.sub}</span>
+                                    <span class="text-[10px] text-gray-500 font-bold">${coin.name}</span>
                                 </div>
                             </div>
-                            <span class="text-[8px] text-gray-600 font-black uppercase tracking-tighter">BINANCE</span>
+                            <span class="text-[9px] ${isActive ? 'text-pink-500/50' : 'text-gray-700'} font-black uppercase tracking-tighter">BINANCE</span>
                         `;
                         container.appendChild(div);
                     });
@@ -287,67 +295,77 @@
                     emptyMsg.classList.add('hidden');
                     slotData.forEach((asset, idx) => {
                         const curPrice = this.state.prices[asset.id]?.usd || 0;
+                        const isPriceValid = curPrice > 0;
+                        
                         const val = curPrice * asset.quantity;
                         const cost = asset.buyPrice * asset.quantity;
                         const profit = val - cost;
                         const profitPct = cost > 0 ? (profit / cost) * 100 : 0;
                         
-                        totalVal += val;
-                        totalCost += cost;
+                        if (isPriceValid) {
+                            totalVal += val;
+                            totalCost += cost;
+                        }
 
                         const symbolFormat = `BINANCE:${asset.sub}USDT`;
                         const isActive = symbolFormat === this.state.activeSymbol;
                         const isEditing = this.state.editingIndex === idx;
                         
                         const card = document.createElement('div');
-                        card.className = `bg-[#0d1117] border border-gray-800 p-3 rounded-xl flex flex-col transition-all cursor-pointer hover:border-gray-600 
-                                        ${isActive ? 'card-active' : ''}`;
+                        card.className = `bg-[#0d1117] border border-gray-800 p-4 rounded-2xl flex flex-col transition-all cursor-pointer hover:border-gray-600 
+                                        ${isActive ? 'card-active ring-1 ring-pink-500/50' : ''}`;
                         
                         if (!isEditing) {
+                            const profitClass = isPriceValid ? (profit >= 0 ? 'profit-glow' : 'loss-glow') : 'text-gray-500';
+                            const profitText = isPriceValid ? `${profit >= 0 ? '+$' : '-$'}${this.fmt(Math.abs(profit))}` : '---';
+                            const pctText = isPriceValid ? `${profit >= 0 ? '+' : ''}${this.fmt(profitPct, 'num')}%` : '---';
+
                             card.onclick = () => this.changeChartSymbol(symbolFormat);
                             card.innerHTML = `
-                                <div class="flex justify-between items-start mb-1">
-                                    <span class="text-xs font-black text-white uppercase tracking-tighter">${asset.sub}</span>
-                                    <div class="flex space-x-2">
-                                        <button onclick="event.stopPropagation(); JamApp.startEdit(${idx})" class="text-[9px] text-gray-500 hover:text-pink-500 font-bold transition-colors">EDIT</button>
-                                        <button onclick="event.stopPropagation(); JamApp.removeAsset(${idx})" class="text-[9px] text-gray-600 hover:text-red-500 font-bold transition-colors">✕</button>
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-1.5 h-1.5 jam-bg rounded-full"></div>
+                                        <span class="text-[13px] font-black text-white uppercase tracking-tighter">${asset.sub}</span>
+                                    </div>
+                                    <div class="flex space-x-3">
+                                        <button onclick="event.stopPropagation(); JamApp.startEdit(${idx})" class="text-[10px] text-gray-500 hover:text-pink-500 font-black transition-colors">EDIT</button>
+                                        <button onclick="event.stopPropagation(); JamApp.removeAsset(${idx})" class="text-[10px] text-gray-600 hover:text-red-500 font-black transition-colors">✕</button>
                                     </div>
                                 </div>
                                 <div class="flex justify-between items-end">
-                                    <div class="text-[8px] text-gray-500 font-bold">
-                                        <p>HOLD: ${this.fmt(asset.quantity, 'num')}</p>
-                                        <p>VALUE: $${this.fmt(val)}</p>
+                                    <div class="text-[10px] text-gray-500 font-bold space-y-0.5">
+                                        <p>HOLD: <span class="text-gray-300">${this.fmt(asset.quantity, 'num')}</span></p>
+                                        <p>VAL: <span class="text-gray-300">${isPriceValid ? '$' + this.fmt(val) : '---'}</span></p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-[10px] font-black leading-none ${profit >= 0 ? 'profit-glow' : 'loss-glow'} mb-0.5">
-                                            ${profit >= 0 ? '+$' : '-$'}${this.fmt(Math.abs(profit))}
+                                        <p class="text-[11px] font-black leading-none ${profitClass} mb-1">
+                                            ${profitText}
                                         </p>
-                                        <p class="text-[11px] font-black ${profit >= 0 ? 'profit-glow' : 'loss-glow'}">
-                                            ${profit >= 0 ? '+' : ''}${this.fmt(profitPct, 'num')}%
+                                        <p class="text-sm font-black ${profitClass}">
+                                            ${pctText}
                                         </p>
                                     </div>
                                 </div>
                             `;
                         } else {
-                            // 편집 모드 UI
                             card.innerHTML = `
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="text-xs font-black text-pink-500 uppercase tracking-tighter">Editing ${asset.sub}</span>
-                                    <div class="flex space-x-2">
-                                        <button onclick="event.stopPropagation(); JamApp.saveEdit(${idx})" class="text-[9px] text-green-500 font-black hover:text-green-400">SAVE</button>
-                                        <button onclick="event.stopPropagation(); JamApp.cancelEdit()" class="text-[9px] text-gray-500 font-black hover:text-gray-400">ESC</button>
+                                <div class="flex justify-between items-start mb-3">
+                                    <span class="text-[11px] font-black text-pink-500 uppercase tracking-widest">Adjust ${asset.sub}</span>
+                                    <div class="flex space-x-3">
+                                        <button onclick="event.stopPropagation(); JamApp.saveEdit(${idx})" class="text-[10px] text-green-500 font-black hover:text-green-400">SAVE</button>
+                                        <button onclick="event.stopPropagation(); JamApp.cancelEdit()" class="text-[10px] text-gray-500 font-black hover:text-gray-400">ESC</button>
                                     </div>
                                 </div>
-                                <div class="space-y-1">
+                                <div class="grid grid-cols-2 gap-2">
                                     <div class="flex flex-col">
-                                        <label class="text-[7px] text-gray-500 font-bold uppercase mb-0.5">Price ($)</label>
+                                        <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Price</label>
                                         <input type="number" id="edit-price-${idx}" value="${asset.buyPrice}" 
-                                               class="w-full bg-[#1c2128] border border-gray-700 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500">
+                                               class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
                                     </div>
                                     <div class="flex flex-col">
-                                        <label class="text-[7px] text-gray-500 font-bold uppercase mb-0.5">Quantity</label>
+                                        <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Qty</label>
                                         <input type="number" id="edit-qty-${idx}" value="${asset.quantity}" 
-                                               class="w-full bg-[#1c2128] border border-gray-700 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500">
+                                               class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
                                     </div>
                                 </div>
                             `;
@@ -356,19 +374,13 @@
                     });
                 }
 
-                // 총계 UI 업데이트
                 const totalProfitAmt = totalVal - totalCost;
-                const totalProfitPct = totalCost > 0 ? (totalProfitAmt / totalCost) * 100 : 0;
                 
                 document.getElementById('total-balance').innerText = `$${this.fmt(totalVal)}`;
                 
                 const profitAmtEl = document.getElementById('total-profit-amt');
                 profitAmtEl.innerText = `${totalProfitAmt >= 0 ? '+$' : '-$'}${this.fmt(Math.abs(totalProfitAmt))}`;
-                profitAmtEl.className = `text-lg font-black ${totalProfitAmt >= 0 ? 'profit-glow' : 'loss-glow'}`;
-
-                const profitEl = document.getElementById('total-profit');
-                profitEl.innerText = `${totalProfitPct >= 0 ? '+' : ''}${this.fmt(totalProfitPct, 'num')}%`;
-                profitEl.className = `text-lg font-black ${totalProfitAmt >= 0 ? 'profit-glow' : 'loss-glow'}`;
+                profitAmtEl.className = `text-xl font-black ${totalProfitAmt >= 0 ? 'profit-glow' : 'loss-glow'}`;
 
                 this.updateSlotUI();
             },
@@ -383,17 +395,14 @@
                 const newPrice = parseFloat(document.getElementById(`edit-price-${idx}`).value);
                 const newQty = parseFloat(document.getElementById(`edit-qty-${idx}`).value);
 
-                if (isNaN(newPrice) || isNaN(newQty) || newPrice < 0 || newQty < 0) {
-                    return alert("Please enter valid positive numbers.");
-                }
+                if (isNaN(newPrice) || isNaN(newQty) || newPrice < 0 || newQty < 0) return alert("Invalid inputs");
 
-                // 소수점 오차 방지를 위해 적절히 처리 (보통 코인 수량은 소수점이 길 수 있으므로 숫자로 유지)
                 this.state.portfolios[this.state.currentSlot][idx].buyPrice = newPrice;
                 this.state.portfolios[this.state.currentSlot][idx].quantity = newQty;
 
                 this.state.editingIndex = null;
                 this.save();
-                console.log("✅ Asset Updated Successfully");
+                console.log("✅ Asset Updated");
             },
 
             cancelEdit() {
@@ -406,7 +415,7 @@
                 const price = parseFloat(document.getElementById('p-buy-price').value);
                 const qty = parseFloat(document.getElementById('p-quantity').value);
 
-                if (!coinData || isNaN(price) || isNaN(qty)) return alert("Please enter valid price and quantity.");
+                if (!coinData || isNaN(price) || isNaN(qty)) return alert("Fill all fields");
 
                 const info = JSON.parse(coinData);
                 this.state.portfolios[this.state.currentSlot].push({ 
@@ -415,13 +424,12 @@
                 this.save();
                 this.syncPrices();
                 
-                // Clear inputs
                 document.getElementById('p-buy-price').value = '';
                 document.getElementById('p-quantity').value = '';
             },
 
             removeAsset(idx) {
-                if (confirm("Permanently remove this asset from your portfolio?")) {
+                if (confirm("Remove this asset?")) {
                     this.state.portfolios[this.state.currentSlot].splice(idx, 1);
                     this.save();
                 }
@@ -437,17 +445,17 @@
 
                 try {
                     const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
-                    if (!res.ok) throw new Error("Price Sync Error");
+                    if (!res.ok) throw new Error("API Error");
                     this.state.prices = await res.json();
                     this.renderPortfolio();
                 } catch (e) {
-                    console.warn("Price sync failed, using cached data if available.");
+                    console.warn("Price sync failed");
                 }
             },
 
             startPriceSync() {
                 this.syncPrices();
-                setInterval(() => this.syncPrices(), 30000); // 30s interval
+                setInterval(() => this.syncPrices(), 30000); 
             },
 
             // [UI Nav]
@@ -484,7 +492,7 @@
 
             populateCoinSelect() {
                 const select = document.getElementById('p-coin-select');
-                select.innerHTML = '<option value="" disabled selected>Select Asset</option>';
+                select.innerHTML = '<option value="" disabled selected>Select Coin</option>';
                 this.cryptoList.forEach(c => {
                     const opt = document.createElement('option');
                     opt.value = JSON.stringify({id: c.id, sub: c.sub});
@@ -495,26 +503,29 @@
 
             async fetchNews(sub = "Global", fullName = "Crypto") {
                 const container = document.getElementById('news-container');
-                document.getElementById('news-title').innerText = `${sub} Insights`;
-                container.innerHTML = `<div class="jam-loading text-center py-10 text-[9px] text-pink-500 font-bold uppercase tracking-widest">Scanning JAM Data...</div>`;
+                document.getElementById('news-title').innerText = `${sub} INSIGHTS`;
+                container.innerHTML = `<div class="jam-loading text-center py-10 text-[10px] text-pink-500 font-black uppercase tracking-[0.2em]">Intercepting Data Stream...</div>`;
 
                 setTimeout(() => {
                     container.innerHTML = '';
                     const mock = [
-                        {t:`${sub} potential breakout pattern identified.`, s:"Market Pulse"},
-                        {t:`Volume spike detected on ${fullName} pairs.`, s:"JAM Analytics"},
-                        {t:`Institutional flow increasing for ${sub}.`, s:"Institutional Insight"}
+                        {t:`Significant volume spike detected for ${sub} on Binance.`, s:"Market Flow", time:"12m ago"},
+                        {t:`Technical analysis indicates bullish consolidation for ${fullName}.`, s:"Chart Patterns", time:"45m ago"},
+                        {t:`Institutional whales moving ${sub} off exchanges.`, s:"On-Chain", time:"2h ago"}
                     ];
                     mock.forEach(n => {
                         const div = document.createElement('div');
-                        div.className = 'group bg-[#0d1117] border border-gray-800 p-3 rounded-lg hover:border-pink-500 transition-all cursor-default';
+                        div.className = 'group bg-[#0d1117] border border-gray-800 p-4 rounded-xl hover:border-pink-500/50 transition-all cursor-default shadow-sm';
                         div.innerHTML = `
-                            <span class="text-[7px] font-black text-pink-500 uppercase tracking-widest">${n.s}</span>
-                            <h4 class="text-[10px] font-semibold leading-snug mt-1 group-hover:text-white transition-colors">${n.t}</h4>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[9px] font-black text-pink-500 uppercase tracking-widest">${n.s}</span>
+                                <span class="text-[8px] text-gray-600 font-bold uppercase">${n.time}</span>
+                            </div>
+                            <h4 class="text-[11px] font-bold leading-relaxed text-gray-200 group-hover:text-white transition-colors">${n.t}</h4>
                         `;
                         container.appendChild(div);
                     });
-                }, 600);
+                }, 800);
             },
 
             save() {
@@ -526,5 +537,6 @@
         // Initialize App
         window.onload = () => JamApp.init();
     </script>
+
 </body>
 </html>
