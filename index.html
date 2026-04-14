@@ -112,7 +112,11 @@
                                 <p class="text-[8px] text-gray-500 uppercase">Total Balance</p>
                                 <p id="total-balance" class="text-lg font-black leading-none">$0</p>
                             </div>
-                            <div class="text-right">
+                            <div class="text-right border-l border-gray-800 pl-6">
+                                <p class="text-[8px] text-gray-500 uppercase">Total Profit</p>
+                                <p id="total-profit-amt" class="text-lg font-black leading-none">$0</p>
+                            </div>
+                            <div class="text-right border-l border-gray-800 pl-6">
                                 <p class="text-[8px] text-gray-500 uppercase">Total ROI</p>
                                 <p id="total-profit" class="text-lg font-black leading-none">0.00%</p>
                             </div>
@@ -190,7 +194,8 @@
                 activeSymbol: "BINANCE:BTCUSDT",
                 portfolios: JSON.parse(localStorage.getItem('jam_data_v2')) || [[], [], []],
                 prices: {},
-                isInitialLoad: true
+                isInitialLoad: true,
+                editingIndex: null // 현재 편집 중인 자산 인덱스
             },
 
             // [Initialization]
@@ -267,7 +272,7 @@
                     });
             },
 
-            // [Portfolio Rendering] 핵심: 카드 클릭 이벤트 및 하이라이트
+            // [Portfolio Rendering]
             renderPortfolio() {
                 const container = document.getElementById('portfolio-list');
                 const emptyMsg = document.getElementById('empty-msg');
@@ -292,50 +297,110 @@
 
                         const symbolFormat = `BINANCE:${asset.sub}USDT`;
                         const isActive = symbolFormat === this.state.activeSymbol;
+                        const isEditing = this.state.editingIndex === idx;
                         
                         const card = document.createElement('div');
-                        // 카드 기본 스타일 + 활성 상태(isActive) 조건부 클래스
-                        card.className = `bg-[#0d1117] border border-gray-800 p-3 rounded-xl flex flex-col transition-all cursor-pointer hover:border-gray-600 active:scale-95 
+                        card.className = `bg-[#0d1117] border border-gray-800 p-3 rounded-xl flex flex-col transition-all cursor-pointer hover:border-gray-600 
                                         ${isActive ? 'card-active' : ''}`;
                         
-                        // 카드 클릭 시 차트 심볼 변경 (이벤트 연동)
-                        card.onclick = () => this.changeChartSymbol(symbolFormat);
-
-                        card.innerHTML = `
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="text-xs font-black text-white uppercase tracking-tighter">${asset.sub}</span>
-                                <div class="flex space-x-2">
-                                    <!-- event.stopPropagation()으로 삭제 시 차트 변경 방지 -->
-                                    <button onclick="event.stopPropagation(); JamApp.removeAsset(${idx})" class="text-[9px] text-gray-600 hover:text-red-500 font-bold transition-colors">✕</button>
+                        if (!isEditing) {
+                            card.onclick = () => this.changeChartSymbol(symbolFormat);
+                            card.innerHTML = `
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="text-xs font-black text-white uppercase tracking-tighter">${asset.sub}</span>
+                                    <div class="flex space-x-2">
+                                        <button onclick="event.stopPropagation(); JamApp.startEdit(${idx})" class="text-[9px] text-gray-500 hover:text-pink-500 font-bold transition-colors">EDIT</button>
+                                        <button onclick="event.stopPropagation(); JamApp.removeAsset(${idx})" class="text-[9px] text-gray-600 hover:text-red-500 font-bold transition-colors">✕</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <div class="text-[8px] text-gray-500 font-bold">
-                                    <p>HOLD: ${this.fmt(asset.quantity, 'num')}</p>
-                                    <p>VALUE: $${this.fmt(val)}</p>
+                                <div class="flex justify-between items-end">
+                                    <div class="text-[8px] text-gray-500 font-bold">
+                                        <p>HOLD: ${this.fmt(asset.quantity, 'num')}</p>
+                                        <p>VALUE: $${this.fmt(val)}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-[10px] font-black leading-none ${profit >= 0 ? 'profit-glow' : 'loss-glow'} mb-0.5">
+                                            ${profit >= 0 ? '+$' : '-$'}${this.fmt(Math.abs(profit))}
+                                        </p>
+                                        <p class="text-[11px] font-black ${profit >= 0 ? 'profit-glow' : 'loss-glow'}">
+                                            ${profit >= 0 ? '+' : ''}${this.fmt(profitPct, 'num')}%
+                                        </p>
+                                    </div>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-black ${profit >= 0 ? 'profit-glow' : 'loss-glow'}">
-                                        ${profit >= 0 ? '+' : ''}${this.fmt(profitPct, 'num')}%
-                                    </p>
+                            `;
+                        } else {
+                            // 편집 모드 UI
+                            card.innerHTML = `
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs font-black text-pink-500 uppercase tracking-tighter">Editing ${asset.sub}</span>
+                                    <div class="flex space-x-2">
+                                        <button onclick="event.stopPropagation(); JamApp.saveEdit(${idx})" class="text-[9px] text-green-500 font-black hover:text-green-400">SAVE</button>
+                                        <button onclick="event.stopPropagation(); JamApp.cancelEdit()" class="text-[9px] text-gray-500 font-black hover:text-gray-400">ESC</button>
+                                    </div>
                                 </div>
-                            </div>
-                        `;
+                                <div class="space-y-1">
+                                    <div class="flex flex-col">
+                                        <label class="text-[7px] text-gray-500 font-bold uppercase mb-0.5">Price ($)</label>
+                                        <input type="number" id="edit-price-${idx}" value="${asset.buyPrice}" 
+                                               class="w-full bg-[#1c2128] border border-gray-700 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500">
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <label class="text-[7px] text-gray-500 font-bold uppercase mb-0.5">Quantity</label>
+                                        <input type="number" id="edit-qty-${idx}" value="${asset.quantity}" 
+                                               class="w-full bg-[#1c2128] border border-gray-700 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500">
+                                    </div>
+                                </div>
+                            `;
+                        }
                         container.appendChild(card);
                     });
                 }
 
                 // 총계 UI 업데이트
-                const totalProfitPct = totalCost > 0 ? ((totalVal - totalCost) / totalCost) * 100 : 0;
+                const totalProfitAmt = totalVal - totalCost;
+                const totalProfitPct = totalCost > 0 ? (totalProfitAmt / totalCost) * 100 : 0;
+                
                 document.getElementById('total-balance').innerText = `$${this.fmt(totalVal)}`;
+                
+                const profitAmtEl = document.getElementById('total-profit-amt');
+                profitAmtEl.innerText = `${totalProfitAmt >= 0 ? '+$' : '-$'}${this.fmt(Math.abs(totalProfitAmt))}`;
+                profitAmtEl.className = `text-lg font-black ${totalProfitAmt >= 0 ? 'profit-glow' : 'loss-glow'}`;
+
                 const profitEl = document.getElementById('total-profit');
                 profitEl.innerText = `${totalProfitPct >= 0 ? '+' : ''}${this.fmt(totalProfitPct, 'num')}%`;
-                profitEl.className = `text-lg font-black ${totalVal >= totalCost ? 'profit-glow' : 'loss-glow'}`;
+                profitEl.className = `text-lg font-black ${totalProfitAmt >= 0 ? 'profit-glow' : 'loss-glow'}`;
 
                 this.updateSlotUI();
             },
 
             // [Asset Management]
+            startEdit(idx) {
+                this.state.editingIndex = idx;
+                this.renderPortfolio();
+            },
+
+            saveEdit(idx) {
+                const newPrice = parseFloat(document.getElementById(`edit-price-${idx}`).value);
+                const newQty = parseFloat(document.getElementById(`edit-qty-${idx}`).value);
+
+                if (isNaN(newPrice) || isNaN(newQty) || newPrice < 0 || newQty < 0) {
+                    return alert("Please enter valid positive numbers.");
+                }
+
+                // 소수점 오차 방지를 위해 적절히 처리 (보통 코인 수량은 소수점이 길 수 있으므로 숫자로 유지)
+                this.state.portfolios[this.state.currentSlot][idx].buyPrice = newPrice;
+                this.state.portfolios[this.state.currentSlot][idx].quantity = newQty;
+
+                this.state.editingIndex = null;
+                this.save();
+                console.log("✅ Asset Updated Successfully");
+            },
+
+            cancelEdit() {
+                this.state.editingIndex = null;
+                this.renderPortfolio();
+            },
+
             addAsset() {
                 const coinData = document.getElementById('p-coin-select').value;
                 const price = parseFloat(document.getElementById('p-buy-price').value);
