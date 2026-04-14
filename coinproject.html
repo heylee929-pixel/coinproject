@@ -31,15 +31,20 @@
         .portfolio-slot-btn {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .profit-border { border-color: #FF007A !important; }
-        .loss-border { border-color: #ef4444 !important; }
+        .profit-border { border-color: #00d1ff !important; box-shadow: 0 0 15px rgba(0, 209, 255, 0.15); }
+        .loss-border { border-color: #ff4d4d !important; box-shadow: 0 0 15px rgba(255, 77, 77, 0.15); }
         .jam-accent { color: #FF007A; text-shadow: 0 0 15px rgba(255, 0, 122, 0.3); }
         .jam-bg { background-color: #FF007A; }
         
-        /* 수익 시 네온 글로우 효과 */
+        /* 수익/손실 네온 글로우 효과 */
         .profit-glow {
-            color: #FF007A !important;
-            text-shadow: 0 0 10px rgba(255, 0, 122, 0.8), 0 0 20px rgba(255, 0, 122, 0.4);
+            color: #00d1ff !important;
+            text-shadow: 0 0 10px rgba(0, 209, 255, 0.8), 0 0 20px rgba(0, 209, 255, 0.4);
+            font-weight: 800;
+        }
+        .loss-glow {
+            color: #ff4d4d !important;
+            text-shadow: 0 0 10px rgba(255, 77, 77, 0.8), 0 0 20px rgba(255, 77, 77, 0.4);
             font-weight: 800;
         }
 
@@ -403,7 +408,8 @@
 
                     const isEditing = editingIndex === idx;
                     const div = document.createElement('div');
-                    div.className = `bg-[#0d1117] border border-gray-800 p-3 rounded-xl flex flex-col transition-all ${profit >= 0 ? 'hover:border-pink-500' : 'hover:border-red-500'}`;
+                    // 수익 상태에 따라 호버 시 테두리 색상 변경
+                    div.className = `bg-[#0d1117] border border-gray-800 p-3 rounded-xl flex flex-col transition-all ${profit >= 0 ? 'hover:border-[#00d1ff]' : 'hover:border-[#ff4d4d]'}`;
                     
                     if (isEditing) {
                         div.innerHTML = `
@@ -434,7 +440,7 @@
                                     <p class="text-[8px] text-gray-500">Entry: $${asset.buyPrice}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-sm font-black ${profit >= 0 ? 'profit-glow' : 'text-red-500'}">${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(2)}%</p>
+                                    <p class="text-sm font-black ${profit >= 0 ? 'profit-glow' : 'loss-glow'}">${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(2)}%</p>
                                 </div>
                             </div>
                         `;
@@ -449,7 +455,7 @@
             
             const tpElement = document.getElementById('total-profit');
             tpElement.innerText = `${totalProfitPct >= 0 ? '+' : ''}${totalProfitPct.toFixed(2)}%`;
-            tpElement.className = `text-lg font-extrabold ${totalProfit >= 0 ? 'profit-glow' : 'text-red-500'}`;
+            tpElement.className = `text-lg font-extrabold ${totalProfit >= 0 ? 'profit-glow' : 'loss-glow'}`;
             
             updateSlotBorders();
         }
@@ -470,10 +476,13 @@
                     val += (currentPrices[a.id]?.usd || 0) * a.quantity;
                 });
                 const btn = document.getElementById(`pslot-${idx}`);
-                btn.classList.remove('profit-border', 'loss-border');
+                btn.classList.remove('profit-border', 'loss-border', 'border-pink-500');
+                
                 if (slot.length > 0) {
                     if (val >= cost) btn.classList.add('profit-border');
                     else btn.classList.add('loss-border');
+                } else if (idx === currentPortfolioSlot) {
+                    btn.classList.add('border-pink-500');
                 }
             });
         }
