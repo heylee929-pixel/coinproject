@@ -207,33 +207,57 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script type="text/javascript">
-        const coinData = {
-            "L1L2": [
-                { symbol: "BINANCE:BTCUSDT", name: "Bitcoin", sub: "BTC", id: "bitcoin" },
-                { symbol: "BINANCE:ETHUSDT", name: "Ethereum", sub: "ETH", id: "ethereum" },
-                { symbol: "BINANCE:SOLUSDT", name: "Solana", sub: "SOL", id: "solana" },
-                { symbol: "BINANCE:ADAUSDT", name: "Cardano", sub: "ADA", id: "cardano" },
-                { symbol: "BINANCE:MATICUSDT", name: "Polygon", sub: "MATIC", id: "polygon-ecosystem" }
-            ],
-            "DeFi": [
-                { symbol: "BINANCE:UNIUSDT", name: "Uniswap", sub: "UNI", id: "uniswap" },
-                { symbol: "BINANCE:AAVEUSDT", name: "Aave", sub: "AAVE", id: "aave" },
-                { symbol: "BINANCE:LINKUSDT", name: "Chainlink", sub: "LINK", id: "chainlink" },
-                { symbol: "BINANCE:CAKEUSDT", name: "PancakeSwap", sub: "CAKE", id: "pancakeswap-token" }
-            ],
-            "Meme": [
-                { symbol: "BINANCE:DOGEUSDT", name: "Dogecoin", sub: "DOGE", id: "dogecoin" },
-                { symbol: "BINANCE:SHIBUSDT", name: "Shiba Inu", sub: "SHIB", id: "shiba-inu" },
-                { symbol: "BINANCE:PEPEUSDT", name: "Pepe", sub: "PEPE", id: "pepe" },
-                { symbol: "BINANCE:FLOKIUSDT", name: "Floki", sub: "FLOKI", id: "floki" }
-            ]
-        };
+        // 로고 및 데이터 매핑 최적화
+        const cryptoList = [
+            // L1/L2
+            { symbol: "BINANCE:BTCUSDT", name: "Bitcoin", sub: "BTC", id: "bitcoin", category: "L1L2" },
+            { symbol: "BINANCE:ETHUSDT", name: "Ethereum", sub: "ETH", id: "ethereum", category: "L1L2" },
+            { symbol: "BINANCE:SOLUSDT", name: "Solana", sub: "SOL", id: "solana", category: "L1L2" },
+            { symbol: "BINANCE:BNBUSDT", name: "BNB", sub: "BNB", id: "binancecoin", category: "L1L2" },
+            { symbol: "BINANCE:XRPUSDT", name: "XRP", sub: "XRP", id: "ripple", category: "L1L2" },
+            { symbol: "BINANCE:ADAUSDT", name: "Cardano", sub: "ADA", id: "cardano", category: "L1L2" },
+            { symbol: "BINANCE:AVAXUSDT", name: "Avalanche", sub: "AVAX", id: "avalanche-2", category: "L1L2" },
+            { symbol: "BINANCE:DOTUSDT", name: "Polkadot", sub: "DOT", id: "polkadot", category: "L1L2" },
+            { symbol: "BINANCE:NEARUSDT", name: "Near", sub: "NEAR", id: "near", category: "L1L2" },
+            { symbol: "BINANCE:MATICUSDT", name: "Polygon", sub: "MATIC", id: "polygon-ecosystem", category: "L1L2" },
+            { symbol: "BINANCE:LTCUSDT", name: "Litecoin", sub: "LTC", id: "litecoin", category: "L1L2" },
+            { symbol: "BINANCE:BCHUSDT", name: "Bitcoin Cash", sub: "BCH", id: "bitcoin-cash", category: "L1L2" },
+            { symbol: "BINANCE:TRXUSDT", name: "TRON", sub: "TRX", id: "tron", category: "L1L2" },
+            { symbol: "BINANCE:APTUSDT", name: "Aptos", sub: "APT", id: "aptos", category: "L1L2" },
+            { symbol: "BINANCE:ARBUSDT", name: "Arbitrum", sub: "ARB", id: "arbitrum", category: "L1L2" },
+            { symbol: "BINANCE:STXUSDT", name: "Stacks", sub: "STX", id: "blockstack", category: "L1L2" },
+            // DeFi
+            { symbol: "BINANCE:LINKUSDT", name: "Chainlink", sub: "LINK", id: "chainlink", category: "DeFi" },
+            { symbol: "BINANCE:UNIUSDT", name: "Uniswap", sub: "UNI", id: "uniswap", category: "DeFi" },
+            { symbol: "BINANCE:AAVEUSDT", name: "Aave", sub: "AAVE", id: "aave", category: "DeFi" },
+            { symbol: "BINANCE:MKRUSDT", name: "Maker", sub: "MKR", id: "maker", category: "DeFi" },
+            { symbol: "BINANCE:RNDRUSDT", name: "Render", sub: "RNDR", id: "render-token", category: "DeFi" },
+            { symbol: "BINANCE:GRTUSDT", name: "The Graph", sub: "GRT", id: "the-graph", category: "DeFi" },
+            { symbol: "BINANCE:SNXUSDT", name: "Synthetix", sub: "SNX", id: "havven", category: "DeFi" },
+            { symbol: "BINANCE:CAKEUSDT", name: "PancakeSwap", sub: "CAKE", id: "pancakeswap-token", category: "DeFi" },
+            // Meme
+            { symbol: "BINANCE:DOGEUSDT", name: "Dogecoin", sub: "DOGE", id: "dogecoin", category: "Meme" },
+            { symbol: "BINANCE:SHIBUSDT", name: "Shiba Inu", sub: "SHIB", id: "shiba-inu", category: "Meme" },
+            { symbol: "BINANCE:PEPEUSDT", name: "Pepe", sub: "PEPE", id: "pepe", category: "Meme" },
+            { symbol: "BINANCE:FLOKIUSDT", name: "Floki", sub: "FLOKI", id: "floki", category: "Meme" },
+            { symbol: "BINANCE:BONKUSDT", name: "Bonk", sub: "BONK", id: "bonk", category: "Meme" },
+            { symbol: "BINANCE:WIFUSDT", name: "dogwifhat", sub: "WIF", id: "dogwifhat", category: "Meme" }
+        ];
 
         let currentMarketTab = "L1L2";
         let currentPortfolioSlot = 0;
         let portfolios = JSON.parse(localStorage.getItem('cv_portfolios')) || [[], [], []];
         let currentPrices = {};
         let editingIndex = -1;
+
+        // 이미지 로딩 에러 핸들러
+        function handleImageError(img, symbol) {
+            const parent = img.parentElement;
+            if (parent) {
+                parent.innerHTML = `<span class="text-[10px] font-black text-gray-400 uppercase">${symbol[0]}</span>`;
+                parent.classList.add('bg-[#30363d]');
+            }
+        }
 
         function updateDashboard(coin) {
             initChart(coin.symbol);
@@ -292,21 +316,29 @@
             const filter = document.getElementById('coin-filter').value.toLowerCase();
             listContainer.innerHTML = '';
 
-            coinData[currentMarketTab].forEach(coin => {
-                if (coin.name.toLowerCase().includes(filter) || coin.sub.toLowerCase().includes(filter)) {
+            cryptoList.forEach(coin => {
+                if (coin.category === currentMarketTab && (coin.name.toLowerCase().includes(filter) || coin.sub.toLowerCase().includes(filter))) {
                     const item = document.createElement('div');
                     item.className = 'flex items-center justify-between p-2 hover:bg-gray-800 rounded-lg cursor-pointer transition-colors group mb-1';
                     item.onclick = () => updateDashboard(coin);
                     
+                    // 더 안정적인 CoinCap 아이콘 서버 사용 (소문자 처리)
+                    const logoUrl = `https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png`;
+                    
                     item.innerHTML = `
-                        <div class="flex items-center space-x-2">
-                            <div class="w-5 h-5 rounded-full bg-gray-700 flex items-center justify-center text-[9px] font-bold text-gray-300 uppercase">${coin.sub[0]}</div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-700">
+                                <img src="${logoUrl}" 
+                                     alt="${coin.sub}" 
+                                     class="w-full h-full object-cover"
+                                     onerror="handleImageError(this, '${coin.sub}')">
+                            </div>
                             <div class="flex flex-col">
-                                <span class="text-[11px] font-bold leading-tight group-hover:text-pink-500">${coin.sub}</span>
+                                <span class="text-[11px] font-bold leading-tight group-hover:text-pink-500 text-gray-200">${coin.sub}</span>
                                 <span class="text-[9px] text-gray-500 leading-tight">${coin.name}</span>
                             </div>
                         </div>
-                        <div class="text-[8px] text-gray-600 font-bold uppercase">BINANCE</div>
+                        <div class="text-[8px] text-gray-600 font-bold uppercase tracking-widest">BINANCE</div>
                     `;
                     listContainer.appendChild(item);
                 }
@@ -316,7 +348,7 @@
         function populateCoinSelect() {
             const select = document.getElementById('p-coin-select');
             select.innerHTML = '<option value="" disabled selected>Select Coin</option>';
-            Object.values(coinData).flat().forEach(coin => {
+            cryptoList.forEach(coin => {
                 const opt = document.createElement('option');
                 opt.value = JSON.stringify({id: coin.id, sub: coin.sub});
                 opt.innerText = `${coin.sub} (${coin.name})`;
