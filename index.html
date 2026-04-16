@@ -204,17 +204,50 @@
                         <!-- Center Button Area (10 Sites) -->
                         <div class="space-y-3">
                             <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Global Terminal</h4>
-                            <div class="grid grid-cols-2 gap-2">
-                                <a href="https://upbit.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">UPBIT</a>
-                                <a href="https://www.bithumb.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">BITHUMB</a>
-                                <a href="https://www.binance.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">BINANCE</a>
-                                <a href="https://www.bitget.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">BITGET</a>
-                                <a href="https://www.okx.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">OKX</a>
-                                <a href="https://coinmarketcap.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">COINMARKETCAP</a>
-                                <a href="https://dexscreener.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">DEXSCREENER</a>
-                                <a href="https://www.tradingview.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">TRADINGVIEW</a>
-                                <a href="https://coinness.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">COINNESS</a>
-                                <a href="https://dune.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">DUNE ANALYTICS</a>
+                            <div class="grid grid-cols-2 gap-2" id="hub-grid">
+                                <a href="https://upbit.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=upbit.com&sz=32" class="w-4 h-4" alt="">
+                                    UPBIT
+                                </a>
+                                <a href="https://www.bithumb.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=bithumb.com&sz=32" class="w-4 h-4" alt="">
+                                    BITHUMB
+                                </a>
+                                <a href="https://www.binance.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=binance.com&sz=32" class="w-4 h-4" alt="">
+                                    BINANCE
+                                </a>
+                                <a href="https://www.bitget.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=bitget.com&sz=32" class="w-4 h-4" alt="">
+                                    BITGET
+                                </a>
+                                <a href="https://www.okx.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=okx.com&sz=32" class="w-4 h-4" alt="">
+                                    OKX
+                                </a>
+                                <a href="https://coinmarketcap.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=coinmarketcap.com&sz=32" class="w-4 h-4" alt="">
+                                    COINMARKETCAP
+                                </a>
+                                <a href="https://dexscreener.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=dexscreener.com&sz=32" class="w-4 h-4" alt="">
+                                    DEXSCREENER
+                                </a>
+                                <a href="https://www.tradingview.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=tradingview.com&sz=32" class="w-4 h-4" alt="">
+                                    TRADINGVIEW
+                                </a>
+                                <a href="https://coinness.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=coinness.com&sz=32" class="w-4 h-4" alt="">
+                                    COINNESS
+                                </a>
+                                <a href="https://dune.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                    <img src="https://www.google.com/s2/favicons?domain=dune.com&sz=32" class="w-4 h-4" alt="">
+                                    DUNE ANALYTICS
+                                </a>
+                                <button onclick="JamApp.hub.addLink()" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform border-dashed border-gray-600 opacity-60 hover:opacity-100 hover:border-pink-500">
+                                    [+] ADD CUSTOM
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -319,6 +352,7 @@
                 this.populateCoinSelect();
                 this.changeChartSymbol(this.state.market.activeSymbol); 
                 this.startPriceSync();
+                this.hub.render();
                 this.initEvents();
                 console.log("💎 JAM Engine Refactored & Started Successfully");
             },
@@ -353,7 +387,7 @@
 
                 const coin = this.cryptoList.find(c => c.symbol === symbol);
                 if (coin) {
-                    document.getElementById('news-title').innerText = `${coin.sub} INSIGHTS`;
+                    // document.getElementById('news-title').innerText = `${coin.sub} INSIGHTS`;
                 }
                 
                 this.renderMarketList(); 
@@ -569,6 +603,52 @@
             save() {
                 localStorage.setItem('jam_data_v2', JSON.stringify(this.state.portfolio.slots));
                 this.renderPortfolio();
+            },
+
+            // [CRYPTO HUB] Logic
+            hub: {
+                links: JSON.parse(localStorage.getItem('jam_hub_links')) || [],
+                addLink() {
+                    const name = prompt("사이트 이름을 입력하세요 (예: Naver)");
+                    if (!name) return;
+                    let url = prompt("URL을 입력하세요 (예: naver.com)");
+                    if (!url) return;
+                    if (!url.startsWith('http')) url = 'https://' + url;
+                    
+                    this.links.push({ name, url });
+                    this.save();
+                    this.render();
+                },
+                removeLink(idx) {
+                    if (confirm(`'${this.links[idx].name}' 링크를 삭제하시겠습니까?`)) {
+                        this.links.splice(idx, 1);
+                        this.save();
+                        this.render();
+                    }
+                },
+                save() {
+                    localStorage.setItem('jam_hub_links', JSON.stringify(this.links));
+                },
+                render() {
+                    const container = document.getElementById('hub-grid');
+                    if (!container) return;
+                    
+                    document.querySelectorAll('.custom-link').forEach(el => el.remove());
+                    
+                    const addButton = container.lastElementChild;
+                    this.links.forEach((link, idx) => {
+                        const a = document.createElement('a');
+                        a.href = link.url;
+                        a.target = "_blank";
+                        a.className = "hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform custom-link";
+                        a.innerText = link.name;
+                        a.oncontextmenu = (e) => {
+                            e.preventDefault();
+                            this.removeLink(idx);
+                        };
+                        container.insertBefore(a, addButton);
+                    });
+                }
             }
         };
 
