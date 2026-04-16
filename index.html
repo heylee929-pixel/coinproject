@@ -136,8 +136,8 @@
                         <div class="md:col-span-1 space-y-3 border-r border-gray-800 pr-6">
                             <p class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Add Asset</p>
                             <select id="p-coin-select" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-pink-500"></select>
-                            <input type="number" id="p-buy-price" placeholder="Entry Price" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
-                            <input type="number" id="p-quantity" placeholder="Amount" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
+                            <input type="text" id="p-buy-price" oninput="JamApp.formatInput(this)" placeholder="Entry Price" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
+                            <input type="text" id="p-quantity" oninput="JamApp.formatInput(this)" placeholder="Amount" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
                             <button onclick="JamApp.addAsset()" class="w-full jam-bg hover:opacity-90 text-white py-3 rounded-lg text-xs font-black uppercase shadow-lg shadow-pink-500/20 transition-all active:scale-95">Deploy Capital</button>
                         </div>
                         <!-- Asset List -->
@@ -216,19 +216,45 @@
 
             // [Utility] Numbers Formatting
             fmt(val, type = 'cur') {
-                if (isNaN(val) || val === null) return '0.00';
-                return type === 'cur' 
-                    ? val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                    : val.toFixed(2);
+                if (isNaN(val) || val === null) return '0';
+                let options;
+                if (type === 'pct') {
+                    options = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
+                } else if (type === 'cur') {
+                    options = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+                } else {
+                    options = { maximumFractionDigits: 8 };
+                }
+                return Number(val).toLocaleString(undefined, options);
             },
 
-            // [Chart Logic]
+            // Real-time input formatting
+            formatInput(el) {
+                let val = el.value.replace(/,/g, '');
+                if (val === "") return;
+                if (isNaN(val) && val !== ".") {
+                    el.value = val.slice(0, -1);
+                    return;
+                }
+                const parts = val.split(".");
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                el.value = parts.join(".");
+            },
+
+            unformat(str) {
+                if (typeof str !== 'string') return str;
+                return parseFloat(str.replace(/,/g, '')) || 0;
+            },
+
+            // [Chart Logic] - 중앙 차트 갱신 및 UI 전체 동기화
             changeChartSymbol(symbol) {
                 if (!symbol) return;
                 
+                // 1. 상태 및 제목 업데이트
                 this.state.activeSymbol = symbol;
                 document.getElementById('current-symbol-title').innerText = symbol;
                 
+                // 2. TradingView 위젯 재초기화 (기존 컨테이너 자동 대체)
                 new TradingView.widget({
                     "autosize": true,
                     "symbol": symbol,
@@ -243,9 +269,11 @@
                     "container_id": "tv_chart_container"
                 });
 
+                // 3. 뉴스 데이터 스트림 업데이트
                 const coin = this.cryptoList.find(c => c.symbol === symbol);
                 if (coin) this.fetchNews(coin.sub, coin.name);
                 
+                // 4. UI 전체 동기화 (마켓 리스트 및 포트폴리오 하이라이트)
                 this.renderMarketList(); 
                 this.renderPortfolio(); 
             },
@@ -307,6 +335,7 @@
                             totalCost += cost;
                         }
 
+                        // 포트폴리오 연동용 바이낸스 심볼 생성
                         const symbolFormat = `BINANCE:${asset.sub}USDT`;
                         const isActive = symbolFormat === this.state.activeSymbol;
                         const isEditing = this.state.editingIndex === idx;
@@ -317,10 +346,13 @@
                         
                         if (!isEditing) {
                             const profitClass = isPriceValid ? (profit >= 0 ? 'profit-glow' : 'loss-glow') : 'text-gray-500';
-                            const profitText = isPriceValid ? `${profit >= 0 ? '+$' : '-$'}${this.fmt(Math.abs(profit))}` : '---';
-                            const pctText = isPriceValid ? `${profit >= 0 ? '+' : ''}${this.fmt(profitPct, 'num')}%` : '---';
+                            const profitSign = profit >= 0 ? '+' : '-';
+                            const profitText = isPriceValid ? `${profitSign}$${this.fmt(Math.abs(profit))}` : '---';
+                            const pctText = isPriceValid ? `${profit >= 0 ? '+' : ''}${this.fmt(profitPct, 'pct')}%` : '---';
 
+                            // 자산 카드 클릭 시 차트 즉시 연동
                             card.onclick = () => this.changeChartSymbol(symbolFormat);
+                            
                             card.innerHTML = `
                                 <div class="flex justify-between items-start mb-2">
                                     <div class="flex items-center space-x-2">
@@ -359,12 +391,12 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="flex flex-col">
                                         <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Price</label>
-                                        <input type="number" id="edit-price-${idx}" value="${asset.buyPrice}" 
+                                        <input type="text" id="edit-price-${idx}" oninput="JamApp.formatInput(this)" value="${this.fmt(asset.buyPrice, 'num')}" 
                                                class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
                                     </div>
                                     <div class="flex flex-col">
                                         <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Qty</label>
-                                        <input type="number" id="edit-qty-${idx}" value="${asset.quantity}" 
+                                        <input type="text" id="edit-qty-${idx}" oninput="JamApp.formatInput(this)" value="${this.fmt(asset.quantity, 'num')}" 
                                                class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
                                     </div>
                                 </div>
@@ -379,7 +411,8 @@
                 document.getElementById('total-balance').innerText = `$${this.fmt(totalVal)}`;
                 
                 const profitAmtEl = document.getElementById('total-profit-amt');
-                profitAmtEl.innerText = `${totalProfitAmt >= 0 ? '+$' : '-$'}${this.fmt(Math.abs(totalProfitAmt))}`;
+                const profitSign = totalProfitAmt >= 0 ? '+' : '-';
+                profitAmtEl.innerText = `${profitSign}$${this.fmt(Math.abs(totalProfitAmt))}`;
                 profitAmtEl.className = `text-xl font-black ${totalProfitAmt >= 0 ? 'profit-glow' : 'loss-glow'}`;
 
                 this.updateSlotUI();
@@ -392,8 +425,8 @@
             },
 
             saveEdit(idx) {
-                const newPrice = parseFloat(document.getElementById(`edit-price-${idx}`).value);
-                const newQty = parseFloat(document.getElementById(`edit-qty-${idx}`).value);
+                const newPrice = this.unformat(document.getElementById(`edit-price-${idx}`).value);
+                const newQty = this.unformat(document.getElementById(`edit-qty-${idx}`).value);
 
                 if (isNaN(newPrice) || isNaN(newQty) || newPrice < 0 || newQty < 0) return alert("Invalid inputs");
 
@@ -412,10 +445,10 @@
 
             addAsset() {
                 const coinData = document.getElementById('p-coin-select').value;
-                const price = parseFloat(document.getElementById('p-buy-price').value);
-                const qty = parseFloat(document.getElementById('p-quantity').value);
+                const price = this.unformat(document.getElementById('p-buy-price').value);
+                const qty = this.unformat(document.getElementById('p-quantity').value);
 
-                if (!coinData || isNaN(price) || isNaN(qty)) return alert("Fill all fields");
+                if (!coinData || isNaN(price) || isNaN(qty) || price <= 0 || qty <= 0) return alert("Fill all fields with valid numbers");
 
                 const info = JSON.parse(coinData);
                 this.state.portfolios[this.state.currentSlot].push({ 
