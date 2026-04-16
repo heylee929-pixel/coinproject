@@ -32,6 +32,24 @@
 
         @keyframes jam-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .jam-loading { animation: jam-pulse 1.5s infinite; }
+
+        /* CRYPTO HUB 버튼 스타일 */
+        .hub-btn { 
+            background-color: #161b22; 
+            border: 1px solid #30363d; 
+            color: #ffffff; 
+            transition: all 0.2s ease; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .hub-btn:hover { 
+            border-color: #FF007A; 
+            color: #FF007A; 
+            box-shadow: 0 0 15px rgba(255, 0, 122, 0.3);
+            background-color: #1c2128;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -156,15 +174,45 @@
                 </section>
             </div>
 
-            <!-- [C] Empty Insights Canvas (Right) -->
+            <!-- [C] CRYPTO HUB (Right) -->
             <div class="lg:col-span-3">
-                <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-160px)] shadow-2xl">
+                <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-160px)] shadow-2xl relative">
                     <div class="p-4 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
-                        <div class="flex items-center space-x-2">
-                            <h3 id="news-title" class="font-black text-[11px] uppercase tracking-[0.15em] text-white">BTC INSIGHTS</h3>
+                        <h3 class="font-black text-[14px] uppercase tracking-[0.2em] jam-accent">CRYPTO HUB</h3>
+                    </div>
+                    
+                    <div class="p-4 flex-grow overflow-y-auto custom-scrollbar space-y-6">
+                        <!-- Upper Widget Area (Market Pulse) -->
+                        <div class="space-y-3">
+                            <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Market Pulse</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="h-20 bg-[#0d1117] border border-gray-800 rounded-xl flex items-center justify-center text-[10px] text-gray-600 font-bold uppercase italic">Pulse 1</div>
+                                <div class="h-20 bg-[#0d1117] border border-gray-800 rounded-xl flex items-center justify-center text-[10px] text-gray-600 font-bold uppercase italic">Pulse 2</div>
+                            </div>
+                        </div>
+
+                        <!-- Center Button Area (10 Sites) -->
+                        <div class="space-y-3">
+                            <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Global Terminal</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <a href="https://upbit.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">UPBIT</a>
+                                <a href="https://www.bithumb.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">BITHUMB</a>
+                                <a href="https://www.binance.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">BINANCE</a>
+                                <a href="https://www.bitget.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">BITGET</a>
+                                <a href="https://www.okx.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">OKX</a>
+                                <a href="https://coinmarketcap.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">COINMARKETCAP</a>
+                                <a href="https://dexscreener.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">DEXSCREENER</a>
+                                <a href="https://www.tradingview.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">TRADINGVIEW</a>
+                                <a href="https://coinness.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">COINNESS</a>
+                                <a href="https://dune.com" target="_blank" class="hub-btn py-3 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform">DUNE ANALYTICS</a>
+                            </div>
                         </div>
                     </div>
-                    <div id="news-container" class="p-4 flex-grow overflow-y-auto custom-scrollbar space-y-4"></div>
+
+                    <!-- Bottom Decoration -->
+                    <div class="p-3 bg-[#0d1117]/50 border-t border-gray-800/50">
+                        <p class="text-[8px] text-gray-600 font-mono tracking-tighter animate-pulse uppercase">&gt; HUB OPERATIONAL SYSTEM_v2.0_STABLE</p>
+                    </div>
                 </section>
             </div>
 
