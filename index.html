@@ -22,6 +22,12 @@
         .profit-glow { color: #00d1ff !important; text-shadow: 0 0 10px rgba(0, 209, 255, 0.6); font-weight: 800; }
         .loss-glow { color: #ff4d4d !important; text-shadow: 0 0 10px rgba(255, 77, 77, 0.6); font-weight: 800; }
         
+        /* 실시간 시세 변동 플래시 효과 */
+        .price-up { color: #00ffa2 !important; transition: all 0.2s; }
+        .price-down { color: #ff007a !important; transition: all 0.2s; }
+        .flash-up { background-color: rgba(0, 255, 162, 0.15) !important; transition: background-color 0.3s; }
+        .flash-down { background-color: rgba(255, 0, 122, 0.15) !important; transition: background-color 0.3s; }
+        
         /* 카드 활성화(Active) 스타일 */
         .card-active { 
             border-color: #FF007A !important; 
@@ -306,11 +312,94 @@
                 portfolio: {
                     slots: JSON.parse(localStorage.getItem('jam_data_v2')) || [[], [], []],
                     prices: {},
+                    prevPrices: {},
                     editingIndex: null
                 },
-                ui: {
-                    isInitialLoad: true
+                system: {
+                    usdRate: 1400,
+                    isInitialLoad: true,
+                    needsRender: false
                 }
+            },
+
+            // [Binance WebSocket Engine]
+            ws: {
+                conn: null,
+                fallbackTimer: null,
+
+                init() {
+                    if (this.conn) return;
+                    console.log("🔌 Connecting to Binance WebSocket...");
+                    
+                    // Subscribe to all tickers in our list
+                    this.conn = new WebSocket("wss://stream.binance.com:9443/ws/!miniTicker@arr");
+                    
+                    this.conn.onopen = () => {
+                        console.log("✅ WebSocket Live");
+                        if (this.fallbackTimer) {
+                            clearInterval(this.fallbackTimer);
+                            this.fallbackTimer = null;
+                        }
+                    };
+
+                    this.conn.onmessage = (msg) => {
+                        const data = JSON.parse(msg.data);
+                        this.handleData(data);
+                    };
+
+                    this.conn.onclose = () => {
+                        console.warn("❌ WebSocket Closed. Retrying in 3s...");
+                        this.conn = null;
+                        setTimeout(() => this.init(), 3000);
+                        JamApp.startFallback();
+                    };
+
+                    this.conn.onerror = (e) => {
+                        console.error("⚠️ WebSocket Error");
+                        JamApp.startFallback();
+                    };
+                },
+
+                handleData(tickers) {
+                    let updated = false;
+                    tickers.forEach(t => {
+                        const wsSymbol = t.s.toLowerCase(); // e.g. btcusdt
+                        const coin = JamApp.cryptoList.find(c => c.symbol.toLowerCase().split(':')[1] === wsSymbol);
+                        
+                        if (coin) {
+                            const newPrice = parseFloat(t.c);
+                            if (!JamApp.state.portfolio.prices[coin.id]) {
+                                JamApp.state.portfolio.prices[coin.id] = { usd: 0 };
+                            }
+                            
+                            // Save previous for flash effect
+                            JamApp.state.portfolio.prevPrices[coin.id] = JamApp.state.portfolio.prices[coin.id].usd;
+                            JamApp.state.portfolio.prices[coin.id].usd = newPrice;
+                            updated = true;
+                        }
+                    });
+
+                    if (updated) {
+                        JamApp.state.system.needsRender = true;
+                    }
+                }
+            },
+
+            startFallback() {
+                if (this.ws.fallbackTimer) return;
+                console.log("🔄 Fallback: Polling Active");
+                this.syncPrices();
+                this.ws.fallbackTimer = setInterval(() => this.syncPrices(), 10000);
+            },
+
+            // [Throttled Renderer] - 10 FPS Max (Approx)
+            runRenderer() {
+                if (JamApp.state.system.needsRender) {
+                    JamApp.renderMarketList();
+                    JamApp.renderPortfolio();
+                    JamApp.state.system.needsRender = false;
+                }
+                requestAnimationFrame(() => JamApp.runRenderer());
             },
 
             // [Utils] Independent Helper Functions
@@ -351,17 +440,15 @@
                 this.renderMarketList();
                 this.populateCoinSelect();
                 this.changeChartSymbol(this.state.market.activeSymbol); 
-                this.startPriceSync();
+                this.ws.init();
+                this.runRenderer();
                 this.hub.render();
                 this.initEvents();
-                console.log("💎 JAM Engine Refactored & Started Successfully");
+                console.log("💎 JAM Engine Initialized");
             },
 
             initEvents() {
-                // 전역 윈도우 이벤트 등 통합 관리부
-                window.addEventListener('resize', () => {
-                    // 필요한 경우 차트 리사이즈 로직 추가
-                });
+                window.addEventListener('resize', () => {});
             },
 
             // [Market Logic]
@@ -385,11 +472,6 @@
                     "container_id": "tv_chart_container"
                 });
 
-                const coin = this.cryptoList.find(c => c.symbol === symbol);
-                if (coin) {
-                    // document.getElementById('news-title').innerText = `${coin.sub} INSIGHTS`;
-                }
-                
                 this.renderMarketList(); 
                 this.renderPortfolio(); 
             },
@@ -404,9 +486,18 @@
                                 (c.name.toLowerCase().includes(filter) || c.sub.toLowerCase().includes(filter)))
                     .forEach(coin => {
                         const isActive = coin.symbol === this.state.market.activeSymbol;
+                        const price = this.state.portfolio.prices[coin.id]?.usd || 0;
+                        const prevPrice = this.state.portfolio.prevPrices[coin.id] || price;
+                        const krwPrice = price * this.state.system.usdRate;
+                        
+                        let flashClass = '';
+                        let textClass = 'text-white';
+                        if (price > prevPrice) { flashClass = 'flash-up'; textClass = 'price-up'; }
+                        else if (price < prevPrice) { flashClass = 'flash-down'; textClass = 'price-down'; }
+
                         const div = document.createElement('div');
                         div.className = `flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all group mb-1.5 active:scale-[0.98] 
-                                        ${isActive ? 'bg-pink-500/10 border border-pink-500/30 shadow-[0_0_15px_rgba(255,0,122,0.1)]' : 'hover:bg-[#1c2128]'}`;
+                                        ${isActive ? 'bg-pink-500/10 border border-pink-500/30 shadow-[0_0_15px_rgba(255,0,122,0.1)]' : 'hover:bg-[#1c2128]'} ${flashClass}`;
                         div.onclick = () => this.changeChartSymbol(coin.symbol);
                         div.innerHTML = `
                             <div class="flex items-center space-x-3">
@@ -414,10 +505,13 @@
                                      class="w-7 h-7 rounded-full border border-gray-700 bg-gray-800 p-0.5" onerror="this.src='https://via.placeholder.com/28/30363d/white?text=${coin.sub[0]}'">
                                 <div class="flex flex-col">
                                     <span class="text-[12px] font-black ${isActive ? 'text-pink-500' : 'group-hover:text-pink-500'} transition-colors">${coin.sub}</span>
-                                    <span class="text-[10px] text-gray-500 font-bold">${coin.name}</span>
+                                    <span class="text-[9px] text-gray-500 font-bold uppercase">BINANCE</span>
                                 </div>
                             </div>
-                            <span class="text-[9px] ${isActive ? 'text-pink-500/50' : 'text-gray-700'} font-black uppercase tracking-tighter">BINANCE</span>
+                            <div class="text-right">
+                                <p class="text-[11px] font-black ${textClass}">${price > 0 ? '$' + this.utils.fmt(price) : '---'}</p>
+                                <p class="text-[9px] text-gray-600 font-bold">₩${this.utils.fmt(krwPrice)}</p>
+                            </div>
                         `;
                         container.appendChild(div);
                     });
@@ -427,8 +521,8 @@
             renderPortfolio() {
                 const container = document.getElementById('portfolio-list');
                 const emptyMsg = document.getElementById('empty-msg');
-                const slotIdx = JamApp.state.portfolio.currentSlot || 0; // 초기 로드용 대응
-                const slotData = this.state.portfolio.slots[this.state.portfolio.currentSlot || 0];
+                const slotIdx = JamApp.state.portfolio.currentSlot || 0;
+                const slotData = this.state.portfolio.slots[slotIdx];
                 
                 container.innerHTML = '';
                 let totalVal = 0, totalCost = 0;
@@ -536,7 +630,7 @@
                 const info = JSON.parse(coinData);
                 this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].push({ id: info.id, sub: info.sub, buyPrice: price, quantity: qty });
                 this.save();
-                this.syncPrices();
+                this.ws.init(); 
                 document.getElementById('p-buy-price').value = '';
                 document.getElementById('p-quantity').value = '';
             },
@@ -547,18 +641,25 @@
                 }
             },
 
-            // [Data] Price Sync
+            // [Data] REST Price Sync (Fallback)
             async syncPrices() {
-                const ids = [...new Set(this.state.portfolio.slots.flat().map(a => a.id))].join(',');
-                if (!ids) { this.renderPortfolio(); return; }
+                const ids = [...new Set([
+                    ...this.cryptoList.map(c => c.id),
+                    ...this.state.portfolio.slots.flat().map(a => a.id)
+                ])].join(',');
+                
                 try {
                     const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
                     if (!res.ok) throw new Error("API Error");
-                    this.state.portfolio.prices = await res.json();
-                    this.renderPortfolio();
-                } catch (e) { console.warn("Price sync failed"); }
+                    const data = await res.json();
+                    
+                    for (const id in data) {
+                        if (!this.state.portfolio.prices[id]) this.state.portfolio.prices[id] = { usd: 0 };
+                        this.state.portfolio.prices[id].usd = data[id].usd;
+                    }
+                    this.state.system.needsRender = true;
+                } catch (e) { console.warn("Polling failed"); }
             },
-            startPriceSync() { this.syncPrices(); setInterval(() => this.syncPrices(), 30000); },
 
             // [UI Navigation]
             switchMarket(tabId) {
