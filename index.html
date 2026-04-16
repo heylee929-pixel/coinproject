@@ -36,7 +36,9 @@
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <!-- 상단 실시간 티커 -->
+    <!-- ==========================================
+         [1] TOP TICKER SECTION
+         ========================================== -->
     <div class="w-full border-b border-gray-800 bg-[#0d1117]">
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
         {
@@ -58,7 +60,9 @@
         </script>
     </div>
 
-    <!-- 헤더 -->
+    <!-- ==========================================
+         [2] HEADER SECTION
+         ========================================== -->
     <header class="border-b border-gray-800 bg-[#0d1117]/90 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -76,10 +80,13 @@
         </div>
     </header>
 
+    <!-- ==========================================
+         [3] MAIN CONTENT
+         ========================================== -->
     <main class="flex-grow max-w-[1600px] mx-auto w-full px-4 py-6">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- [1] Market List -->
+            <!-- [A] Market List (Left) -->
             <div class="lg:col-span-2">
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-160px)] shadow-2xl">
                     <div class="flex border-b border-gray-800 bg-[#0d1117] p-1">
@@ -94,7 +101,7 @@
                 </section>
             </div>
 
-            <!-- [2] Chart & Portfolio -->
+            <!-- [B] Chart & Portfolio (Center) -->
             <div class="lg:col-span-7 space-y-6">
                 <!-- TradingView Chart -->
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
@@ -136,8 +143,8 @@
                         <div class="md:col-span-1 space-y-3 border-r border-gray-800 pr-6">
                             <p class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Add Asset</p>
                             <select id="p-coin-select" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-pink-500"></select>
-                            <input type="text" id="p-buy-price" oninput="JamApp.formatInput(this)" placeholder="Entry Price" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
-                            <input type="text" id="p-quantity" oninput="JamApp.formatInput(this)" placeholder="Amount" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
+                            <input type="text" id="p-buy-price" oninput="JamApp.utils.formatInput(this)" placeholder="Entry Price" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
+                            <input type="text" id="p-quantity" oninput="JamApp.utils.formatInput(this)" placeholder="Amount" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
                             <button onclick="JamApp.addAsset()" class="w-full jam-bg hover:opacity-90 text-white py-3 rounded-lg text-xs font-black uppercase shadow-lg shadow-pink-500/20 transition-all active:scale-95">Deploy Capital</button>
                         </div>
                         <!-- Asset List -->
@@ -149,14 +156,13 @@
                 </section>
             </div>
 
-            <!-- [3] News Insights -->
+            <!-- [C] Empty Insights Canvas (Right) -->
             <div class="lg:col-span-3">
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-160px)] shadow-2xl">
                     <div class="p-4 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
                         <div class="flex items-center space-x-2">
                             <h3 id="news-title" class="font-black text-[11px] uppercase tracking-[0.15em] text-white">BTC INSIGHTS</h3>
                         </div>
-                        <button onclick="JamApp.fetchNews()" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-[9px] text-gray-300 font-black uppercase rounded transition-all">Refresh</button>
                     </div>
                     <div id="news-container" class="p-4 flex-grow overflow-y-auto custom-scrollbar space-y-4"></div>
                 </section>
@@ -165,19 +171,25 @@
         </div>
     </main>
 
+    <!-- ==========================================
+         [4] FOOTER SECTION
+         ========================================== -->
     <footer class="border-t border-gray-800 py-6 bg-[#0d1117]">
         <div class="max-w-[1600px] mx-auto px-4 text-center text-gray-600 text-[10px] font-bold tracking-[0.3em] uppercase">
             &copy; 2026 CRYPTO <span class="text-pink-600">JAM</span> TERMINAL. POWERED BY TRADINGVIEW & COINGECKO.
         </div>
     </footer>
 
+    <!-- ==========================================
+         [5] SCRIPTS & LOGIC
+         ========================================== -->
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script type="text/javascript">
         /**
-         * JAM APP - Core Logic Object
+         * JAM APP - Core Application Object
          */
         const JamApp = {
-            // [Data] Coin Master List
+            // [Data] Immutable Coin Master List
             cryptoList: [
                 { symbol: "BINANCE:BTCUSDT", name: "Bitcoin", sub: "BTC", id: "bitcoin", category: "L1L2" },
                 { symbol: "BINANCE:ETHUSDT", name: "Ethereum", sub: "ETH", id: "ethereum", category: "L1L2" },
@@ -194,67 +206,79 @@
                 { symbol: "BINANCE:FLOKIUSDT", name: "Floki", sub: "FLOKI", id: "floki", category: "Meme" }
             ],
 
-            // [State] App State
+            // [State] Normalized App State
             state: {
-                currentMarket: "L1L2",
-                currentSlot: 0,
-                activeSymbol: "BINANCE:BTCUSDT",
-                portfolios: JSON.parse(localStorage.getItem('jam_data_v2')) || [[], [], []],
-                prices: {},
-                isInitialLoad: true,
-                editingIndex: null 
+                market: {
+                    current: "L1L2",
+                    activeSymbol: "BINANCE:BTCUSDT"
+                },
+                portfolio: {
+                    slots: JSON.parse(localStorage.getItem('jam_data_v2')) || [[], [], []],
+                    prices: {},
+                    editingIndex: null
+                },
+                ui: {
+                    isInitialLoad: true
+                }
+            },
+
+            // [Utils] Independent Helper Functions
+            utils: {
+                fmt(val, type = 'cur') {
+                    if (isNaN(val) || val === null) return '0';
+                    let options;
+                    if (type === 'pct') {
+                        options = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
+                    } else if (type === 'cur') {
+                        options = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+                    } else {
+                        options = { maximumFractionDigits: 8 };
+                    }
+                    return Number(val).toLocaleString(undefined, options);
+                },
+
+                formatInput(el) {
+                    let val = el.value.replace(/,/g, '');
+                    if (val === "") return;
+                    if (isNaN(val) && val !== ".") {
+                        el.value = val.slice(0, -1);
+                        return;
+                    }
+                    const parts = val.split(".");
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    el.value = parts.join(".");
+                },
+
+                unformat(str) {
+                    if (typeof str !== 'string') return str;
+                    return parseFloat(str.replace(/,/g, '')) || 0;
+                }
             },
 
             // [Initialization]
             init() {
                 this.renderMarketList();
                 this.populateCoinSelect();
-                this.changeChartSymbol(this.state.activeSymbol); 
+                this.changeChartSymbol(this.state.market.activeSymbol); 
                 this.startPriceSync();
-                console.log("💎 JAM Engine Started Successfully");
+                this.initEvents();
+                console.log("💎 JAM Engine Refactored & Started Successfully");
             },
 
-            // [Utility] Numbers Formatting
-            fmt(val, type = 'cur') {
-                if (isNaN(val) || val === null) return '0';
-                let options;
-                if (type === 'pct') {
-                    options = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
-                } else if (type === 'cur') {
-                    options = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
-                } else {
-                    options = { maximumFractionDigits: 8 };
-                }
-                return Number(val).toLocaleString(undefined, options);
+            initEvents() {
+                // 전역 윈도우 이벤트 등 통합 관리부
+                window.addEventListener('resize', () => {
+                    // 필요한 경우 차트 리사이즈 로직 추가
+                });
             },
 
-            // Real-time input formatting
-            formatInput(el) {
-                let val = el.value.replace(/,/g, '');
-                if (val === "") return;
-                if (isNaN(val) && val !== ".") {
-                    el.value = val.slice(0, -1);
-                    return;
-                }
-                const parts = val.split(".");
-                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                el.value = parts.join(".");
-            },
-
-            unformat(str) {
-                if (typeof str !== 'string') return str;
-                return parseFloat(str.replace(/,/g, '')) || 0;
-            },
-
-            // [Chart Logic] - 중앙 차트 갱신 및 UI 전체 동기화
+            // [Market Logic]
             changeChartSymbol(symbol) {
                 if (!symbol) return;
                 
-                // 1. 상태 및 제목 업데이트
-                this.state.activeSymbol = symbol;
+                this.state.market.activeSymbol = symbol;
                 document.getElementById('current-symbol-title').innerText = symbol;
                 
-                // 2. TradingView 위젯 재초기화 (기존 컨테이너 자동 대체)
                 new TradingView.widget({
                     "autosize": true,
                     "symbol": symbol,
@@ -269,26 +293,25 @@
                     "container_id": "tv_chart_container"
                 });
 
-                // 3. 뉴스 데이터 스트림 업데이트
                 const coin = this.cryptoList.find(c => c.symbol === symbol);
-                if (coin) this.fetchNews(coin.sub, coin.name);
+                if (coin) {
+                    document.getElementById('news-title').innerText = `${coin.sub} INSIGHTS`;
+                }
                 
-                // 4. UI 전체 동기화 (마켓 리스트 및 포트폴리오 하이라이트)
                 this.renderMarketList(); 
                 this.renderPortfolio(); 
             },
 
-            // [Market List Rendering]
             renderMarketList() {
                 const container = document.getElementById('coin-list');
                 const filter = document.getElementById('coin-filter').value.toLowerCase();
                 container.innerHTML = '';
 
                 this.cryptoList
-                    .filter(c => c.category === this.state.currentMarket && 
+                    .filter(c => c.category === this.state.market.current && 
                                 (c.name.toLowerCase().includes(filter) || c.sub.toLowerCase().includes(filter)))
                     .forEach(coin => {
-                        const isActive = coin.symbol === this.state.activeSymbol;
+                        const isActive = coin.symbol === this.state.market.activeSymbol;
                         const div = document.createElement('div');
                         div.className = `flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all group mb-1.5 active:scale-[0.98] 
                                         ${isActive ? 'bg-pink-500/10 border border-pink-500/30 shadow-[0_0_15px_rgba(255,0,122,0.1)]' : 'hover:bg-[#1c2128]'}`;
@@ -308,11 +331,12 @@
                     });
             },
 
-            // [Portfolio Rendering]
+            // [Portfolio Logic]
             renderPortfolio() {
                 const container = document.getElementById('portfolio-list');
                 const emptyMsg = document.getElementById('empty-msg');
-                const slotData = this.state.portfolios[this.state.currentSlot];
+                const slotIdx = JamApp.state.portfolio.currentSlot || 0; // 초기 로드용 대응
+                const slotData = this.state.portfolio.slots[this.state.portfolio.currentSlot || 0];
                 
                 container.innerHTML = '';
                 let totalVal = 0, totalCost = 0;
@@ -322,37 +346,29 @@
                 } else {
                     emptyMsg.classList.add('hidden');
                     slotData.forEach((asset, idx) => {
-                        const curPrice = this.state.prices[asset.id]?.usd || 0;
+                        const curPrice = this.state.portfolio.prices[asset.id]?.usd || 0;
                         const isPriceValid = curPrice > 0;
-                        
                         const val = curPrice * asset.quantity;
                         const cost = asset.buyPrice * asset.quantity;
                         const profit = val - cost;
                         const profitPct = cost > 0 ? (profit / cost) * 100 : 0;
                         
-                        if (isPriceValid) {
-                            totalVal += val;
-                            totalCost += cost;
-                        }
+                        if (isPriceValid) { totalVal += val; totalCost += cost; }
 
-                        // 포트폴리오 연동용 바이낸스 심볼 생성
                         const symbolFormat = `BINANCE:${asset.sub}USDT`;
-                        const isActive = symbolFormat === this.state.activeSymbol;
-                        const isEditing = this.state.editingIndex === idx;
+                        const isActive = symbolFormat === this.state.market.activeSymbol;
+                        const isEditing = this.state.portfolio.editingIndex === idx;
                         
                         const card = document.createElement('div');
-                        card.className = `bg-[#0d1117] border border-gray-800 p-4 rounded-2xl flex flex-col transition-all cursor-pointer hover:border-gray-600 
-                                        ${isActive ? 'card-active ring-1 ring-pink-500/50' : ''}`;
+                        card.className = `bg-[#0d1117] border border-gray-800 p-4 rounded-2xl flex flex-col transition-all cursor-pointer hover:border-gray-600 ${isActive ? 'card-active ring-1 ring-pink-500/50' : ''}`;
                         
                         if (!isEditing) {
                             const profitClass = isPriceValid ? (profit >= 0 ? 'profit-glow' : 'loss-glow') : 'text-gray-500';
                             const profitSign = profit >= 0 ? '+' : '-';
-                            const profitText = isPriceValid ? `${profitSign}$${this.fmt(Math.abs(profit))}` : '---';
-                            const pctText = isPriceValid ? `${profit >= 0 ? '+' : ''}${this.fmt(profitPct, 'pct')}%` : '---';
+                            const profitText = isPriceValid ? `${profitSign}$${this.utils.fmt(Math.abs(profit))}` : '---';
+                            const pctText = isPriceValid ? `${profit >= 0 ? '+' : ''}${this.utils.fmt(profitPct, 'pct')}%` : '---';
 
-                            // 자산 카드 클릭 시 차트 즉시 연동
                             card.onclick = () => this.changeChartSymbol(symbolFormat);
-                            
                             card.innerHTML = `
                                 <div class="flex justify-between items-start mb-2">
                                     <div class="flex items-center space-x-2">
@@ -366,19 +382,14 @@
                                 </div>
                                 <div class="flex justify-between items-end">
                                     <div class="text-[10px] text-gray-500 font-bold space-y-0.5">
-                                        <p>HOLD: <span class="text-gray-300">${this.fmt(asset.quantity, 'num')}</span></p>
-                                        <p>VAL: <span class="text-gray-300">${isPriceValid ? '$' + this.fmt(val) : '---'}</span></p>
+                                        <p>HOLD: <span class="text-gray-300">${this.utils.fmt(asset.quantity, 'num')}</span></p>
+                                        <p>VAL: <span class="text-gray-300">${isPriceValid ? '$' + this.utils.fmt(val) : '---'}</span></p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-[11px] font-black leading-none ${profitClass} mb-1">
-                                            ${profitText}
-                                        </p>
-                                        <p class="text-sm font-black ${profitClass}">
-                                            ${pctText}
-                                        </p>
+                                        <p class="text-[11px] font-black leading-none ${profitClass} mb-1">${profitText}</p>
+                                        <p class="text-sm font-black ${profitClass}">${pctText}</p>
                                     </div>
-                                </div>
-                            `;
+                                </div>`;
                         } else {
                             card.innerHTML = `
                                 <div class="flex justify-between items-start mb-3">
@@ -391,138 +402,102 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="flex flex-col">
                                         <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Price</label>
-                                        <input type="text" id="edit-price-${idx}" oninput="JamApp.formatInput(this)" value="${this.fmt(asset.buyPrice, 'num')}" 
-                                               class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
+                                        <input type="text" id="edit-price-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.buyPrice, 'num')}" class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
                                     </div>
                                     <div class="flex flex-col">
                                         <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Qty</label>
-                                        <input type="text" id="edit-qty-${idx}" oninput="JamApp.formatInput(this)" value="${this.fmt(asset.quantity, 'num')}" 
-                                               class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
+                                        <input type="text" id="edit-qty-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.quantity, 'num')}" class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
                                     </div>
-                                </div>
-                            `;
+                                </div>`;
                         }
                         container.appendChild(card);
                     });
                 }
 
                 const totalProfitAmt = totalVal - totalCost;
-                
-                document.getElementById('total-balance').innerText = `$${this.fmt(totalVal)}`;
-                
+                document.getElementById('total-balance').innerText = `$${this.utils.fmt(totalVal)}`;
                 const profitAmtEl = document.getElementById('total-profit-amt');
                 const profitSign = totalProfitAmt >= 0 ? '+' : '-';
-                profitAmtEl.innerText = `${profitSign}$${this.fmt(Math.abs(totalProfitAmt))}`;
+                profitAmtEl.innerText = `${profitSign}$${this.utils.fmt(Math.abs(totalProfitAmt))}`;
                 profitAmtEl.className = `text-xl font-black ${totalProfitAmt >= 0 ? 'profit-glow' : 'loss-glow'}`;
 
                 this.updateSlotUI();
             },
 
-            // [Asset Management]
-            startEdit(idx) {
-                this.state.editingIndex = idx;
-                this.renderPortfolio();
-            },
-
+            // [Actions] Portfolio Management
+            startEdit(idx) { this.state.portfolio.editingIndex = idx; this.renderPortfolio(); },
+            cancelEdit() { this.state.portfolio.editingIndex = null; this.renderPortfolio(); },
             saveEdit(idx) {
-                const newPrice = this.unformat(document.getElementById(`edit-price-${idx}`).value);
-                const newQty = this.unformat(document.getElementById(`edit-qty-${idx}`).value);
-
+                const newPrice = this.utils.unformat(document.getElementById(`edit-price-${idx}`).value);
+                const newQty = this.utils.unformat(document.getElementById(`edit-qty-${idx}`).value);
                 if (isNaN(newPrice) || isNaN(newQty) || newPrice < 0 || newQty < 0) return alert("Invalid inputs");
-
-                this.state.portfolios[this.state.currentSlot][idx].buyPrice = newPrice;
-                this.state.portfolios[this.state.currentSlot][idx].quantity = newQty;
-
-                this.state.editingIndex = null;
+                this.state.portfolio.slots[this.state.portfolio.currentSlot || 0][idx].buyPrice = newPrice;
+                this.state.portfolio.slots[this.state.portfolio.currentSlot || 0][idx].quantity = newQty;
+                this.state.portfolio.editingIndex = null;
                 this.save();
-                console.log("✅ Asset Updated");
             },
-
-            cancelEdit() {
-                this.state.editingIndex = null;
-                this.renderPortfolio();
-            },
-
             addAsset() {
                 const coinData = document.getElementById('p-coin-select').value;
-                const price = this.unformat(document.getElementById('p-buy-price').value);
-                const qty = this.unformat(document.getElementById('p-quantity').value);
-
+                const price = this.utils.unformat(document.getElementById('p-buy-price').value);
+                const qty = this.utils.unformat(document.getElementById('p-quantity').value);
                 if (!coinData || isNaN(price) || isNaN(qty) || price <= 0 || qty <= 0) return alert("Fill all fields with valid numbers");
-
                 const info = JSON.parse(coinData);
-                this.state.portfolios[this.state.currentSlot].push({ 
-                    id: info.id, sub: info.sub, buyPrice: price, quantity: qty 
-                });
+                this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].push({ id: info.id, sub: info.sub, buyPrice: price, quantity: qty });
                 this.save();
                 this.syncPrices();
-                
                 document.getElementById('p-buy-price').value = '';
                 document.getElementById('p-quantity').value = '';
             },
-
             removeAsset(idx) {
                 if (confirm("Remove this asset?")) {
-                    this.state.portfolios[this.state.currentSlot].splice(idx, 1);
+                    this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].splice(idx, 1);
                     this.save();
                 }
             },
 
-            // [Data Sync]
+            // [Data] Price Sync
             async syncPrices() {
-                const ids = [...new Set(this.state.portfolios.flat().map(a => a.id))].join(',');
-                if (!ids) {
-                    this.renderPortfolio();
-                    return;
-                }
-
+                const ids = [...new Set(this.state.portfolio.slots.flat().map(a => a.id))].join(',');
+                if (!ids) { this.renderPortfolio(); return; }
                 try {
                     const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
                     if (!res.ok) throw new Error("API Error");
-                    this.state.prices = await res.json();
+                    this.state.portfolio.prices = await res.json();
                     this.renderPortfolio();
-                } catch (e) {
-                    console.warn("Price sync failed");
-                }
+                } catch (e) { console.warn("Price sync failed"); }
             },
+            startPriceSync() { this.syncPrices(); setInterval(() => this.syncPrices(), 30000); },
 
-            startPriceSync() {
-                this.syncPrices();
-                setInterval(() => this.syncPrices(), 30000); 
-            },
-
-            // [UI Nav]
+            // [UI Navigation]
             switchMarket(tabId) {
-                document.getElementById(`mtab-${this.state.currentMarket}`).classList.remove('tab-active');
-                this.state.currentMarket = tabId;
+                document.getElementById(`mtab-${this.state.market.current}`).classList.remove('tab-active');
+                this.state.market.current = tabId;
                 document.getElementById(`mtab-${tabId}`).classList.add('tab-active');
                 this.renderMarketList();
             },
-
             switchSlot(slotIdx) {
-                document.getElementById(`pslot-${this.state.currentSlot}`).classList.add('opacity-50');
-                this.state.currentSlot = slotIdx;
+                const oldSlot = this.state.portfolio.currentSlot || 0;
+                document.getElementById(`pslot-${oldSlot}`).classList.add('opacity-50');
+                this.state.portfolio.currentSlot = slotIdx;
                 document.getElementById(`pslot-${slotIdx}`).classList.remove('opacity-50');
                 this.renderPortfolio();
             },
-
             updateSlotUI() {
-                this.state.portfolios.forEach((slot, idx) => {
+                this.state.portfolio.slots.forEach((slot, idx) => {
                     const btn = document.getElementById(`pslot-${idx}`);
                     btn.classList.remove('border-green-500', 'border-red-500', 'border-pink-500');
                     if (slot.length > 0) {
                         let cost = 0, val = 0;
                         slot.forEach(a => {
                             cost += a.buyPrice * a.quantity;
-                            val += (this.state.prices[a.id]?.usd || 0) * a.quantity;
+                            val += (this.state.portfolio.prices[a.id]?.usd || 0) * a.quantity;
                         });
                         btn.classList.add(val >= cost ? 'border-green-500' : 'border-red-500');
-                    } else if (idx === this.state.currentSlot) {
+                    } else if (idx === (this.state.portfolio.currentSlot || 0)) {
                         btn.classList.add('border-pink-500');
                     }
                 });
             },
-
             populateCoinSelect() {
                 const select = document.getElementById('p-coin-select');
                 select.innerHTML = '<option value="" disabled selected>Select Coin</option>';
@@ -533,36 +508,8 @@
                     select.appendChild(opt);
                 });
             },
-
-            async fetchNews(sub = "Global", fullName = "Crypto") {
-                const container = document.getElementById('news-container');
-                document.getElementById('news-title').innerText = `${sub} INSIGHTS`;
-                container.innerHTML = `<div class="jam-loading text-center py-10 text-[10px] text-pink-500 font-black uppercase tracking-[0.2em]">Intercepting Data Stream...</div>`;
-
-                setTimeout(() => {
-                    container.innerHTML = '';
-                    const mock = [
-                        {t:`Significant volume spike detected for ${sub} on Binance.`, s:"Market Flow", time:"12m ago"},
-                        {t:`Technical analysis indicates bullish consolidation for ${fullName}.`, s:"Chart Patterns", time:"45m ago"},
-                        {t:`Institutional whales moving ${sub} off exchanges.`, s:"On-Chain", time:"2h ago"}
-                    ];
-                    mock.forEach(n => {
-                        const div = document.createElement('div');
-                        div.className = 'group bg-[#0d1117] border border-gray-800 p-4 rounded-xl hover:border-pink-500/50 transition-all cursor-default shadow-sm';
-                        div.innerHTML = `
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-[9px] font-black text-pink-500 uppercase tracking-widest">${n.s}</span>
-                                <span class="text-[8px] text-gray-600 font-bold uppercase">${n.time}</span>
-                            </div>
-                            <h4 class="text-[11px] font-bold leading-relaxed text-gray-200 group-hover:text-white transition-colors">${n.t}</h4>
-                        `;
-                        container.appendChild(div);
-                    });
-                }, 800);
-            },
-
             save() {
-                localStorage.setItem('jam_data_v2', JSON.stringify(this.state.portfolios));
+                localStorage.setItem('jam_data_v2', JSON.stringify(this.state.portfolio.slots));
                 this.renderPortfolio();
             }
         };
