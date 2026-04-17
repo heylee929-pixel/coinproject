@@ -165,10 +165,25 @@
                     <div class="p-5 grid grid-cols-1 md:grid-cols-4 gap-6">
                         <!-- Add Form -->
                         <div class="md:col-span-1 space-y-3 border-r border-gray-800 pr-6">
-                            <p class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Add Asset</p>
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Add Asset</p>
+                                <div class="flex bg-[#0d1117] rounded-md p-0.5 border border-gray-800">
+                                    <button onclick="JamApp.setExchange('upbit')" id="ex-upbit" class="px-2 py-0.5 text-[8px] font-black rounded transition-all text-gray-500 hover:text-white">UPBIT</button>
+                                    <button onclick="JamApp.setExchange('binance')" id="ex-binance" class="px-2 py-0.5 text-[8px] font-black rounded transition-all jam-bg text-white">BINANCE</button>
+                                </div>
+                            </div>
                             <select id="p-coin-select" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-pink-500"></select>
-                            <input type="text" id="p-buy-price" oninput="JamApp.utils.formatInput(this)" placeholder="Entry Price" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
-                            <input type="text" id="p-quantity" oninput="JamApp.utils.formatInput(this)" placeholder="Amount" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
+                            
+                            <div class="relative">
+                                <span id="unit-price" class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-500">$</span>
+                                <input type="text" id="p-buy-price" oninput="JamApp.utils.formatInput(this)" placeholder="Entry Price" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg pl-7 pr-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
+                            </div>
+                            
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-500">#</span>
+                                <input type="text" id="p-quantity" oninput="JamApp.utils.formatInput(this)" placeholder="Amount" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg pl-7 pr-3 py-2.5 text-xs focus:outline-none focus:border-pink-500">
+                            </div>
+                            
                             <button onclick="JamApp.addAsset()" class="w-full jam-bg hover:opacity-90 text-white py-3 rounded-lg text-xs font-black uppercase shadow-lg shadow-pink-500/20 transition-all active:scale-95">Deploy Capital</button>
                         </div>
                         <!-- Asset List -->
@@ -313,7 +328,8 @@
                     slots: JSON.parse(localStorage.getItem('jam_data_v2')) || [[], [], []],
                     prices: {},
                     prevPrices: {},
-                    editingIndex: null
+                    editingIndex: null,
+                    inputExchange: 'binance' // 'upbit' or 'binance'
                 },
                 hubLinks: JSON.parse(localStorage.getItem('jam_hub_links')) || [],
                 system: {
@@ -412,7 +428,7 @@
                     if (type === 'pct') {
                         options = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
                     } else if (type === 'cur') {
-                        options = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+                        options = { minimumFractionDigits: 0, maximumFractionDigits: 2 };
                     } else {
                         options = { maximumFractionDigits: 8 };
                     }
@@ -490,7 +506,6 @@
                         const isActive = coin.symbol === this.state.market.activeSymbol;
                         const price = this.state.portfolio.prices[coin.id]?.usd || 0;
                         const prevPrice = this.state.portfolio.prevPrices[coin.id] || price;
-                        const krwPrice = price * this.state.system.usdRate;
                         
                         let flashClass = '';
                         let textClass = 'text-white';
@@ -526,21 +541,48 @@
                 const slotData = this.state.portfolio.slots[slotIdx];
                 
                 container.innerHTML = '';
-                let totalVal = 0, totalCost = 0;
+                let totalValUSD = 0, totalCostUSD = 0;
 
                 if (slotData.length === 0) {
                     emptyMsg.classList.remove('hidden');
                 } else {
                     emptyMsg.classList.add('hidden');
                     slotData.forEach((asset, idx) => {
-                        const curPrice = this.state.portfolio.prices[asset.id]?.usd || 0;
-                        const isPriceValid = curPrice > 0;
-                        const val = curPrice * asset.quantity;
-                        const cost = asset.buyPrice * asset.quantity;
-                        const profit = val - cost;
-                        const profitPct = cost > 0 ? (profit / cost) * 100 : 0;
+                        const curPriceUSD = this.state.portfolio.prices[asset.id]?.usd || 0;
+                        const isPriceValid = curPriceUSD > 0;
+                        const isUpbit = asset.exchange === 'upbit';
+                        const symbol = isUpbit ? '₩' : '$';
                         
-                        if (isPriceValid) { totalVal += val; totalCost += cost; }
+                        // Calculation base
+                        let displayCurPrice, displayVal, displayCost, displayProfit;
+                        
+                        if (isUpbit) {
+                            displayCurPrice = curPriceUSD * this.state.system.usdRate;
+                            displayVal = displayCurPrice * asset.quantity;
+                            displayCost = asset.buyPrice * asset.quantity;
+                            displayProfit = displayVal - displayCost;
+                            
+                            if (isPriceValid) {
+                                totalValUSD += (displayVal / this.state.system.usdRate);
+                                totalCostUSD += (displayCost / this.state.system.usdRate);
+                            }
+                        } else {
+                            displayCurPrice = curPriceUSD;
+                            displayVal = displayCurPrice * asset.quantity;
+                            displayCost = asset.buyPrice * asset.quantity;
+                            displayProfit = displayVal - displayCost;
+
+                            if (isPriceValid) {
+                                totalValUSD += displayVal;
+                                totalCostUSD += displayCost;
+                            }
+                        }
+
+                        const profitPct = displayCost > 0 ? (displayProfit / displayCost) * 100 : 0;
+                        const profitClass = isPriceValid ? (displayProfit >= 0 ? 'profit-glow' : 'loss-glow') : 'text-gray-500';
+                        const profitSign = displayProfit >= 0 ? '+' : '-';
+                        const profitText = isPriceValid ? `${profitSign}${symbol}${this.utils.fmt(Math.abs(displayProfit))}` : '---';
+                        const pctText = isPriceValid ? `${displayProfit >= 0 ? '+' : ''}${this.utils.fmt(profitPct, 'pct')}%` : '---';
 
                         const symbolFormat = `BINANCE:${asset.sub}USDT`;
                         const isActive = symbolFormat === this.state.market.activeSymbol;
@@ -550,17 +592,13 @@
                         card.className = `bg-[#0d1117] border border-gray-800 p-4 rounded-2xl flex flex-col transition-all cursor-pointer hover:border-gray-600 ${isActive ? 'card-active ring-1 ring-pink-500/50' : ''}`;
                         
                         if (!isEditing) {
-                            const profitClass = isPriceValid ? (profit >= 0 ? 'profit-glow' : 'loss-glow') : 'text-gray-500';
-                            const profitSign = profit >= 0 ? '+' : '-';
-                            const profitText = isPriceValid ? `${profitSign}$${this.utils.fmt(Math.abs(profit))}` : '---';
-                            const pctText = isPriceValid ? `${profit >= 0 ? '+' : ''}${this.utils.fmt(profitPct, 'pct')}%` : '---';
-
                             card.onclick = () => this.changeChartSymbol(symbolFormat);
                             card.innerHTML = `
                                 <div class="flex justify-between items-start mb-2">
                                     <div class="flex items-center space-x-2">
-                                        <div class="w-1.5 h-1.5 jam-bg rounded-full"></div>
+                                        <div class="w-1.5 h-1.5 ${isUpbit ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'jam-bg'} rounded-full"></div>
                                         <span class="text-[13px] font-black text-white uppercase tracking-tighter">${asset.sub}</span>
+                                        <span class="text-[8px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 font-black">${asset.exchange.toUpperCase()}</span>
                                     </div>
                                     <div class="flex space-x-3">
                                         <button onclick="event.stopPropagation(); JamApp.startEdit(${idx})" class="text-[10px] text-gray-500 hover:text-pink-500 font-black transition-colors">EDIT</button>
@@ -570,7 +608,7 @@
                                 <div class="flex justify-between items-end">
                                     <div class="text-[10px] text-gray-500 font-bold space-y-0.5">
                                         <p>HOLD: <span class="text-gray-300">${this.utils.fmt(asset.quantity, 'num')}</span></p>
-                                        <p>VAL: <span class="text-gray-300">${isPriceValid ? '$' + this.utils.fmt(val) : '---'}</span></p>
+                                        <p>VAL: <span class="text-gray-300">${isPriceValid ? symbol + this.utils.fmt(displayVal) : '---'}</span></p>
                                     </div>
                                     <div class="text-right">
                                         <p class="text-[11px] font-black leading-none ${profitClass} mb-1">${profitText}</p>
@@ -588,7 +626,7 @@
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="flex flex-col">
-                                        <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Price</label>
+                                        <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Price (${symbol})</label>
                                         <input type="text" id="edit-price-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.buyPrice, 'num')}" class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
                                     </div>
                                     <div class="flex flex-col">
@@ -601,25 +639,55 @@
                     });
                 }
 
-                const totalProfitAmt = totalVal - totalCost;
-                document.getElementById('total-balance').innerText = `$${this.utils.fmt(totalVal)}`;
+                // Global totals always in USD for consistency in slot-level summary
+                const totalProfitUSD = totalValUSD - totalCostUSD;
+                document.getElementById('total-balance').innerText = `$${this.utils.fmt(totalValUSD)}`;
                 const profitAmtEl = document.getElementById('total-profit-amt');
-                const profitSign = totalProfitAmt >= 0 ? '+' : '-';
-                profitAmtEl.innerText = `${profitSign}$${this.utils.fmt(Math.abs(totalProfitAmt))}`;
-                profitAmtEl.className = `text-xl font-black ${totalProfitAmt >= 0 ? 'profit-glow' : 'loss-glow'}`;
+                const profitSign = totalProfitUSD >= 0 ? '+' : '-';
+                profitAmtEl.innerText = `${profitSign}$${this.utils.fmt(Math.abs(totalProfitUSD))}`;
+                profitAmtEl.className = `text-xl font-black ${totalProfitUSD >= 0 ? 'profit-glow' : 'loss-glow'}`;
 
                 this.updateSlotUI();
             },
 
             // [Actions] Portfolio Management
-            startEdit(idx) { this.state.portfolio.editingIndex = idx; this.renderPortfolio(); },
+            setExchange(ex) {
+                this.state.portfolio.inputExchange = ex;
+                const upBtn = document.getElementById('ex-upbit');
+                const bnBtn = document.getElementById('ex-binance');
+                const unitPrice = document.getElementById('unit-price');
+
+                if (ex === 'upbit') {
+                    upBtn.classList.add('jam-bg', 'text-white');
+                    upBtn.classList.remove('text-gray-500');
+                    bnBtn.classList.remove('jam-bg', 'text-white');
+                    bnBtn.classList.add('text-gray-500');
+                    unitPrice.innerText = '₩';
+                } else {
+                    bnBtn.classList.add('jam-bg', 'text-white');
+                    bnBtn.classList.remove('text-gray-500');
+                    upBtn.classList.remove('jam-bg', 'text-white');
+                    upBtn.classList.add('text-gray-500');
+                    unitPrice.innerText = '$';
+                }
+            },
+            startEdit(idx) { 
+                const asset = this.state.portfolio.slots[this.state.portfolio.currentSlot || 0][idx];
+                this.setExchange(asset.exchange || 'binance');
+                this.state.portfolio.editingIndex = idx; 
+                this.renderPortfolio(); 
+            },
             cancelEdit() { this.state.portfolio.editingIndex = null; this.renderPortfolio(); },
             saveEdit(idx) {
                 const newPrice = this.utils.unformat(document.getElementById(`edit-price-${idx}`).value);
                 const newQty = this.utils.unformat(document.getElementById(`edit-qty-${idx}`).value);
                 if (isNaN(newPrice) || isNaN(newQty) || newPrice < 0 || newQty < 0) return alert("Invalid inputs");
-                this.state.portfolio.slots[this.state.portfolio.currentSlot || 0][idx].buyPrice = newPrice;
-                this.state.portfolio.slots[this.state.portfolio.currentSlot || 0][idx].quantity = newQty;
+                
+                const asset = this.state.portfolio.slots[this.state.portfolio.currentSlot || 0][idx];
+                asset.buyPrice = newPrice;
+                asset.quantity = newQty;
+                // Keep the original exchange it was saved with
+                
                 this.state.portfolio.editingIndex = null;
                 this.save();
             },
@@ -628,8 +696,16 @@
                 const price = this.utils.unformat(document.getElementById('p-buy-price').value);
                 const qty = this.utils.unformat(document.getElementById('p-quantity').value);
                 if (!coinData || isNaN(price) || isNaN(qty) || price <= 0 || qty <= 0) return alert("Fill all fields with valid numbers");
+                
                 const info = JSON.parse(coinData);
-                this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].push({ id: info.id, sub: info.sub, buyPrice: price, quantity: qty });
+                this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].push({ 
+                    id: info.id, 
+                    sub: info.sub, 
+                    buyPrice: price, 
+                    quantity: qty,
+                    exchange: this.state.portfolio.inputExchange
+                });
+                
                 this.save();
                 this.ws.init(); 
                 document.getElementById('p-buy-price').value = '';
@@ -681,12 +757,20 @@
                     const btn = document.getElementById(`pslot-${idx}`);
                     btn.classList.remove('border-green-500', 'border-red-500', 'border-pink-500');
                     if (slot.length > 0) {
-                        let cost = 0, val = 0;
+                        let costUSD = 0, valUSD = 0;
                         slot.forEach(a => {
-                            cost += a.buyPrice * a.quantity;
-                            val += (this.state.portfolio.prices[a.id]?.usd || 0) * a.quantity;
+                            const curPriceUSD = this.state.portfolio.prices[a.id]?.usd || 0;
+                            const isUpbit = a.exchange === 'upbit';
+                            
+                            if (isUpbit) {
+                                costUSD += (a.buyPrice * a.quantity) / this.state.system.usdRate;
+                                valUSD += (curPriceUSD * a.quantity);
+                            } else {
+                                costUSD += a.buyPrice * a.quantity;
+                                valUSD += curPriceUSD * a.quantity;
+                            }
                         });
-                        btn.classList.add(val >= cost ? 'border-green-500' : 'border-red-500');
+                        btn.classList.add(valUSD >= costUSD ? 'border-green-500' : 'border-red-500');
                     } else if (idx === (this.state.portfolio.currentSlot || 0)) {
                         btn.classList.add('border-pink-500');
                     }
