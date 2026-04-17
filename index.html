@@ -141,23 +141,29 @@
 
                 <!-- Portfolio Manager -->
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
-                    <div class="p-5 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
-                        <div class="flex items-center space-x-6">
-                            <h3 class="font-black text-pink-500 text-xs uppercase tracking-widest">Portfolio Control</h3>
-                            <div class="flex space-x-2" id="portfolio-tabs">
-                                <button onclick="JamApp.switchSlot(0)" id="pslot-0" class="px-4 py-1.5 rounded-lg border border-gray-700 text-[10px] font-black bg-[#1c2128] hover:border-pink-500 transition-all">SLOT 1</button>
-                                <button onclick="JamApp.switchSlot(1)" id="pslot-1" class="px-4 py-1.5 rounded-lg border border-gray-700 text-[10px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">SLOT 2</button>
-                                <button onclick="JamApp.switchSlot(2)" id="pslot-2" class="px-4 py-1.5 rounded-lg border border-gray-700 text-[10px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">SLOT 3</button>
+                    <div class="p-4 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <div class="flex space-x-1" id="portfolio-tabs">
+                                <button onclick="JamApp.switchSlot(0)" id="pslot-0" class="px-2.5 py-1 rounded-md border border-gray-700 text-[9px] font-black bg-[#1c2128] hover:border-pink-500 transition-all">1</button>
+                                <button onclick="JamApp.switchSlot(1)" id="pslot-1" class="px-2.5 py-1 rounded-md border border-gray-700 text-[9px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">2</button>
+                                <button onclick="JamApp.switchSlot(2)" id="pslot-2" class="px-2.5 py-1 rounded-md border border-gray-700 text-[9px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">3</button>
+                            </div>
+                            <!-- 통합 통화 스위치 -->
+                            <div class="flex bg-[#0d1117] rounded-md p-0.5 border border-gray-800 ml-2">
+                                <button onclick="JamApp.setDisplayCurrency('KRW')" id="cur-krw" class="px-2 py-0.5 text-[8px] font-black rounded transition-all text-gray-500 hover:text-white uppercase">KRW</button>
+                                <button onclick="JamApp.setDisplayCurrency('USD')" id="cur-usd" class="px-2 py-0.5 text-[8px] font-black rounded transition-all jam-bg text-white uppercase">USD</button>
                             </div>
                         </div>
-                        <div class="flex space-x-8">
+                        <div class="flex space-x-6 items-center flex-grow justify-end">
                             <div class="text-right">
-                                <p class="text-[9px] text-gray-500 uppercase font-bold mb-1">Total Value</p>
-                                <p id="total-balance" class="text-xl font-black leading-none">$0</p>
+                                <p class="text-[8px] text-gray-500 uppercase font-bold mb-0.5 flex items-center justify-end gap-1.5">
+                                    Total Value <span id="total-roi" class="text-[9px] font-black">0%</span>
+                                </p>
+                                <p id="total-balance" class="text-xl font-black leading-none transition-all duration-300 whitespace-nowrap">$0</p>
                             </div>
-                            <div class="text-right border-l border-gray-800 pl-8">
-                                <p class="text-[9px] text-gray-500 uppercase font-bold mb-1">Net Profit</p>
-                                <p id="total-profit-amt" class="text-xl font-black leading-none">$0</p>
+                            <div class="text-right border-l border-gray-800 pl-6">
+                                <p class="text-[8px] text-gray-500 uppercase font-bold mb-0.5">Net Profit</p>
+                                <p id="total-profit-amt" class="text-xl font-black leading-none transition-all duration-300 whitespace-nowrap">$0</p>
                             </div>
                         </div>
                     </div>
@@ -327,7 +333,7 @@
                     inputExchange: 'binance'
                 },
                 hubLinks: JSON.parse(localStorage.getItem('jam_hub_links')) || [],
-                system: { usdRate: 1400, lastRateUpdate: 0 }
+                system: { fixedRate: 1400, displayCurrency: 'USD' }
             },
 
             // [Dual WebSocket Engines]
@@ -385,24 +391,19 @@
 
             // [Exchange Rate Bridge]
             async syncExchangeRate() {
-                const now = Date.now();
-                if (now - this.state.system.lastRateUpdate < 60000) return;
-                try {
-                    const res = await fetch("https://open.er-api.com/v6/latest/USD");
-                    const data = await res.json();
-                    if (data.rates && data.rates.KRW) {
-                        this.state.system.usdRate = data.rates.KRW;
-                        this.state.system.lastRateUpdate = now;
-                        console.log(`💱 Exchange Rate Updated: 1 USD = ${this.state.system.usdRate} KRW`);
-                    }
-                } catch (e) { console.warn("Rate sync failed, using fallback"); }
+                // Fixed rate system: No longer sync with API, but keeping structure for potential future use
+                console.log(`💎 FIXED_EXCHANGE_RATE: 1 USD = ${this.state.system.fixedRate} KRW`);
             },
 
             // [Targeted UI Updater]
             updateRealtimeUI() {
                 const slotIdx = this.state.portfolio.currentSlot || 0;
                 const slotData = this.state.portfolio.slots[slotIdx];
+                const fixedRate = this.state.system.fixedRate;
+                const isDisplayKRW = this.state.system.displayCurrency === 'KRW';
+                
                 let totalValUSD = 0, totalCostUSD = 0;
+                let totalValKRW = 0, totalCostKRW = 0;
 
                 slotData.forEach((asset, idx) => {
                     const isUpbit = asset.exchange === 'upbit';
@@ -418,16 +419,20 @@
                         const profitClass = profit >= 0 ? 'profit-glow' : 'loss-glow';
                         const flashClass = curPrice > prevPrice ? 'price-up' : (curPrice < prevPrice ? 'price-down' : '');
 
-                        // Calculate USD totals for slot summary
+                        // Calculate totals for summary (Unified logic)
                         if (isUpbit) {
-                            totalValUSD += val / this.state.system.usdRate;
-                            totalCostUSD += cost / this.state.system.usdRate;
+                            totalValKRW += val;
+                            totalCostKRW += cost;
+                            totalValUSD += val / fixedRate;
+                            totalCostUSD += cost / fixedRate;
                         } else {
                             totalValUSD += val;
                             totalCostUSD += cost;
+                            totalValKRW += val * fixedRate;
+                            totalCostKRW += cost * fixedRate;
                         }
 
-                        // DOM Injection by ID
+                        // DOM Injection for individual cards (Original currency maintained)
                         const priceEl = document.getElementById(`price-val-${idx}`);
                         const valEl = document.getElementById(`val-val-${idx}`);
                         const profitEl = document.getElementById(`profit-val-${idx}`);
@@ -449,12 +454,34 @@
                     }
                 });
 
-                // Update Header Summary
-                const totalProfitUSD = totalValUSD - totalCostUSD;
-                document.getElementById('total-balance').innerText = `$${this.utils.fmt(totalValUSD)}`;
+                // Update Unified Summary
+                const finalVal = isDisplayKRW ? totalValKRW : totalValUSD;
+                const finalCost = isDisplayKRW ? totalCostKRW : totalCostUSD;
+                const finalProfit = finalVal - finalCost;
+                const finalSymbol = isDisplayKRW ? '₩' : '$';
+                const totalROI = finalCost > 0 ? (finalProfit / finalCost) * 100 : 0;
+                const totalProfitClass = finalProfit >= 0 ? 'profit-glow' : 'loss-glow';
+
+                document.getElementById('total-balance').innerText = `${finalSymbol}${this.utils.fmt(finalVal)}`;
+                
+                const roiEl = document.getElementById('total-roi');
+                if (roiEl) {
+                    roiEl.innerText = `${totalROI >= 0 ? '+' : ''}${this.utils.fmt(totalROI, 'pct')}%`;
+                    roiEl.className = `text-[10px] font-black ${totalProfitClass}`;
+                }
+
                 const profitAmtEl = document.getElementById('total-profit-amt');
-                profitAmtEl.innerText = `${totalProfitUSD >= 0 ? '+' : '-'}$${this.utils.fmt(Math.abs(totalProfitUSD))}`;
-                profitAmtEl.className = `text-xl font-black ${totalProfitUSD >= 0 ? 'profit-glow' : 'loss-glow'}`;
+                if (profitAmtEl) {
+                    profitAmtEl.innerText = `${finalProfit >= 0 ? '+' : '-'}${finalSymbol}${this.utils.fmt(Math.abs(finalProfit))}`;
+                    profitAmtEl.className = `text-xl font-black ${totalProfitClass}`;
+                }
+            },
+
+            setDisplayCurrency(curr) {
+                this.state.system.displayCurrency = curr;
+                document.getElementById('cur-krw').className = `px-3 py-1 text-[9px] font-black rounded transition-all ${curr === 'KRW' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
+                document.getElementById('cur-usd').className = `px-3 py-1 text-[9px] font-black rounded transition-all ${curr === 'USD' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
+                this.updateRealtimeUI();
             },
 
             // [Market Logic]
@@ -621,7 +648,7 @@
             updateSlotUI() {
                 [0,1,2].forEach(i => {
                     const btn = document.getElementById(`pslot-${i}`);
-                    if (btn) btn.className = `px-4 py-1.5 rounded-lg border text-[10px] font-black bg-[#1c2128] transition-all ${i === (this.state.portfolio.currentSlot || 0) ? 'border-pink-500' : 'border-gray-700 opacity-50'}`;
+                    if (btn) btn.className = `px-2.5 py-1 rounded-md border text-[9px] font-black bg-[#1c2128] transition-all ${i === (this.state.portfolio.currentSlot || 0) ? 'border-pink-500' : 'border-gray-700 opacity-50'}`;
                 });
             },
 
