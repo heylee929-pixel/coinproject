@@ -298,10 +298,9 @@
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script type="text/javascript">
         /**
-         * JAM APP - Core Application Object
+         * JAM APP - Core Application Object (v2.0 Phase 2)
          */
         const JamApp = {
-            // [Data] Immutable Coin Master List
             cryptoList: [
                 { symbol: "BINANCE:BTCUSDT", name: "Bitcoin", sub: "BTC", id: "bitcoin", category: "L1L2" },
                 { symbol: "BINANCE:ETHUSDT", name: "Ethereum", sub: "ETH", id: "ethereum", category: "L1L2" },
@@ -318,161 +317,149 @@
                 { symbol: "BINANCE:FLOKIUSDT", name: "Floki", sub: "FLOKI", id: "floki", category: "Meme" }
             ],
 
-            // [State] Normalized App State
             state: {
-                market: {
-                    current: "L1L2",
-                    activeSymbol: "BINANCE:BTCUSDT"
-                },
+                market: { current: "L1L2", activeSymbol: "BINANCE:BTCUSDT" },
                 portfolio: {
                     slots: JSON.parse(localStorage.getItem('jam_data_v2')) || [[], [], []],
-                    prices: {},
-                    prevPrices: {},
+                    realtimePrices: { upbit: {}, binance: {} },
+                    prevPrices: { upbit: {}, binance: {} },
                     editingIndex: null,
-                    inputExchange: 'binance' // 'upbit' or 'binance'
+                    inputExchange: 'binance'
                 },
                 hubLinks: JSON.parse(localStorage.getItem('jam_hub_links')) || [],
-                system: {
-                    usdRate: 1400,
-                    isInitialLoad: true,
-                    needsRender: false
-                }
+                system: { usdRate: 1400, lastRateUpdate: 0 }
             },
 
-            // [Binance WebSocket Engine]
+            // [Dual WebSocket Engines]
             ws: {
-                conn: null,
-                fallbackTimer: null,
+                binance: null,
+                upbit: null,
 
                 init() {
-                    if (this.conn) return;
-                    console.log("🔌 Connecting to Binance WebSocket...");
-                    
-                    // Subscribe to all tickers in our list
-                    this.conn = new WebSocket("wss://stream.binance.com:9443/ws/!miniTicker@arr");
-                    
-                    this.conn.onopen = () => {
-                        console.log("✅ WebSocket Live");
-                        if (this.fallbackTimer) {
-                            clearInterval(this.fallbackTimer);
-                            this.fallbackTimer = null;
-                        }
-                    };
+                    this.initBinance();
+                    this.initUpbit();
+                },
 
-                    this.conn.onmessage = (msg) => {
+                initBinance() {
+                    if (this.binance) return;
+                    this.binance = new WebSocket("wss://stream.binance.com:9443/ws/!miniTicker@arr");
+                    this.binance.onmessage = (msg) => {
                         const data = JSON.parse(msg.data);
-                        this.handleData(data);
-                    };
-
-                    this.conn.onclose = () => {
-                        console.warn("❌ WebSocket Closed. Retrying in 3s...");
-                        this.conn = null;
-                        setTimeout(() => this.init(), 3000);
-                        JamApp.startFallback();
-                    };
-
-                    this.conn.onerror = (e) => {
-                        console.error("⚠️ WebSocket Error");
-                        JamApp.startFallback();
-                    };
-                },
-
-                handleData(tickers) {
-                    let updated = false;
-                    tickers.forEach(t => {
-                        const wsSymbol = t.s.toLowerCase(); // e.g. btcusdt
-                        const coin = JamApp.cryptoList.find(c => c.symbol.toLowerCase().split(':')[1] === wsSymbol);
-                        
-                        if (coin) {
-                            const newPrice = parseFloat(t.c);
-                            if (!JamApp.state.portfolio.prices[coin.id]) {
-                                JamApp.state.portfolio.prices[coin.id] = { usd: 0 };
+                        let updated = false;
+                        data.forEach(t => {
+                            const sub = t.s.replace('USDT', '');
+                            const coin = JamApp.cryptoList.find(c => c.sub === sub);
+                            if (coin) {
+                                const price = parseFloat(t.c);
+                                JamApp.state.portfolio.prevPrices.binance[coin.id] = JamApp.state.portfolio.realtimePrices.binance[coin.id];
+                                JamApp.state.portfolio.realtimePrices.binance[coin.id] = price;
+                                updated = true;
                             }
-                            
-                            // Save previous for flash effect
-                            JamApp.state.portfolio.prevPrices[coin.id] = JamApp.state.portfolio.prices[coin.id].usd;
-                            JamApp.state.portfolio.prices[coin.id].usd = newPrice;
-                            updated = true;
+                        });
+                        if (updated) JamApp.updateRealtimeUI();
+                    };
+                    this.binance.onclose = () => { this.binance = null; setTimeout(() => this.initBinance(), 3000); };
+                },
+
+                initUpbit() {
+                    if (this.upbit) return;
+                    this.upbit = new WebSocket("wss://api.upbit.com/websocket/v1");
+                    this.upbit.onopen = () => {
+                        const codes = JamApp.cryptoList.map(c => `KRW-${c.sub}`);
+                        this.upbit.send(JSON.stringify([{ ticket: "JAM-ENGINE" }, { type: "ticker", codes }]));
+                    };
+                    this.upbit.onmessage = async (msg) => {
+                        const text = await msg.data.text();
+                        const t = JSON.parse(text);
+                        const sub = t.code.replace('KRW-', '');
+                        const coin = JamApp.cryptoList.find(c => c.sub === sub);
+                        if (coin) {
+                            JamApp.state.portfolio.prevPrices.upbit[coin.id] = JamApp.state.portfolio.realtimePrices.upbit[coin.id];
+                            JamApp.state.portfolio.realtimePrices.upbit[coin.id] = t.trade_price;
+                            JamApp.updateRealtimeUI();
                         }
-                    });
-
-                    if (updated) {
-                        JamApp.state.system.needsRender = true;
-                    }
+                    };
+                    this.upbit.onclose = () => { this.upbit = null; setTimeout(() => this.initUpbit(), 3000); };
                 }
             },
 
-            startFallback() {
-                if (this.ws.fallbackTimer) return;
-                console.log("🔄 Fallback: Polling Active");
-                this.syncPrices();
-                this.ws.fallbackTimer = setInterval(() => this.syncPrices(), 10000);
-            },
-
-            // [Throttled Renderer] - 10 FPS Max (Approx)
-            runRenderer() {
-                if (JamApp.state.system.needsRender) {
-                    JamApp.renderMarketList();
-                    JamApp.renderPortfolio();
-                    JamApp.hub.render();
-                    JamApp.state.system.needsRender = false;
-                }
-                requestAnimationFrame(() => JamApp.runRenderer());
-            },
-
-            // [Utils] Independent Helper Functions
-            utils: {
-                fmt(val, type = 'cur') {
-                    if (isNaN(val) || val === null) return '0';
-                    let options;
-                    if (type === 'pct') {
-                        options = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
-                    } else if (type === 'cur') {
-                        options = { minimumFractionDigits: 0, maximumFractionDigits: 2 };
-                    } else {
-                        options = { maximumFractionDigits: 8 };
+            // [Exchange Rate Bridge]
+            async syncExchangeRate() {
+                const now = Date.now();
+                if (now - this.state.system.lastRateUpdate < 60000) return;
+                try {
+                    const res = await fetch("https://open.er-api.com/v6/latest/USD");
+                    const data = await res.json();
+                    if (data.rates && data.rates.KRW) {
+                        this.state.system.usdRate = data.rates.KRW;
+                        this.state.system.lastRateUpdate = now;
+                        console.log(`💱 Exchange Rate Updated: 1 USD = ${this.state.system.usdRate} KRW`);
                     }
-                    return Number(val).toLocaleString(undefined, options);
-                },
+                } catch (e) { console.warn("Rate sync failed, using fallback"); }
+            },
 
-                formatInput(el) {
-                    let val = el.value.replace(/,/g, '');
-                    if (val === "") return;
-                    if (isNaN(val) && val !== ".") {
-                        el.value = val.slice(0, -1);
-                        return;
+            // [Targeted UI Updater]
+            updateRealtimeUI() {
+                const slotIdx = this.state.portfolio.currentSlot || 0;
+                const slotData = this.state.portfolio.slots[slotIdx];
+                let totalValUSD = 0, totalCostUSD = 0;
+
+                slotData.forEach((asset, idx) => {
+                    const isUpbit = asset.exchange === 'upbit';
+                    const curPrice = isUpbit ? this.state.portfolio.realtimePrices.upbit[asset.id] : this.state.portfolio.realtimePrices.binance[asset.id];
+                    const prevPrice = isUpbit ? this.state.portfolio.prevPrices.upbit[asset.id] : this.state.portfolio.prevPrices.binance[asset.id];
+                    const symbol = isUpbit ? '₩' : '$';
+
+                    if (curPrice) {
+                        const val = curPrice * asset.quantity;
+                        const cost = asset.buyPrice * asset.quantity;
+                        const profit = val - cost;
+                        const profitPct = cost > 0 ? (profit / cost) * 100 : 0;
+                        const profitClass = profit >= 0 ? 'profit-glow' : 'loss-glow';
+                        const flashClass = curPrice > prevPrice ? 'price-up' : (curPrice < prevPrice ? 'price-down' : '');
+
+                        // Calculate USD totals for slot summary
+                        if (isUpbit) {
+                            totalValUSD += val / this.state.system.usdRate;
+                            totalCostUSD += cost / this.state.system.usdRate;
+                        } else {
+                            totalValUSD += val;
+                            totalCostUSD += cost;
+                        }
+
+                        // DOM Injection by ID
+                        const priceEl = document.getElementById(`price-val-${idx}`);
+                        const valEl = document.getElementById(`val-val-${idx}`);
+                        const profitEl = document.getElementById(`profit-val-${idx}`);
+                        const pctEl = document.getElementById(`pct-val-${idx}`);
+
+                        if (priceEl) {
+                            priceEl.innerText = `${symbol}${this.utils.fmt(curPrice)}`;
+                            priceEl.className = `text-[11px] font-black leading-none ${profitClass} mb-1 ${flashClass}`;
+                        }
+                        if (valEl) valEl.innerText = `${symbol}${this.utils.fmt(val)}`;
+                        if (profitEl) {
+                            profitEl.innerText = `${profit >= 0 ? '+' : '-'}${symbol}${this.utils.fmt(Math.abs(profit))}`;
+                            profitEl.className = `text-[11px] font-black leading-none ${profitClass} mb-1`;
+                        }
+                        if (pctEl) {
+                            pctEl.innerText = `${profit >= 0 ? '+' : ''}${this.utils.fmt(profitPct, 'pct')}%`;
+                            pctEl.className = `text-sm font-black ${profitClass}`;
+                        }
                     }
-                    const parts = val.split(".");
-                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                    el.value = parts.join(".");
-                },
+                });
 
-                unformat(str) {
-                    if (typeof str !== 'string') return str;
-                    return parseFloat(str.replace(/,/g, '')) || 0;
-                }
-            },
-
-            // [Initialization]
-            init() {
-                this.renderMarketList();
-                this.populateCoinSelect();
-                this.changeChartSymbol(this.state.market.activeSymbol); 
-                this.ws.init();
-                this.runRenderer();
-                this.hub.render();
-                this.initEvents();
-                console.log("💎 JAM Engine Initialized");
-            },
-
-            initEvents() {
-                window.addEventListener('resize', () => {});
+                // Update Header Summary
+                const totalProfitUSD = totalValUSD - totalCostUSD;
+                document.getElementById('total-balance').innerText = `$${this.utils.fmt(totalValUSD)}`;
+                const profitAmtEl = document.getElementById('total-profit-amt');
+                profitAmtEl.innerText = `${totalProfitUSD >= 0 ? '+' : '-'}$${this.utils.fmt(Math.abs(totalProfitUSD))}`;
+                profitAmtEl.className = `text-xl font-black ${totalProfitUSD >= 0 ? 'profit-glow' : 'loss-glow'}`;
             },
 
             // [Market Logic]
             changeChartSymbol(symbol) {
                 if (!symbol) return;
-                
                 this.state.market.activeSymbol = symbol;
                 document.getElementById('current-symbol-title').innerText = symbol;
                 
@@ -489,110 +476,30 @@
                     "hide_side_toolbar": false,
                     "container_id": "tv_chart_container"
                 });
-
-                this.renderMarketList(); 
-                this.renderPortfolio(); 
             },
 
-            renderMarketList() {
-                const container = document.getElementById('coin-list');
-                const filter = document.getElementById('coin-filter').value.toLowerCase();
-                container.innerHTML = '';
-
-                this.cryptoList
-                    .filter(c => c.category === this.state.market.current && 
-                                (c.name.toLowerCase().includes(filter) || c.sub.toLowerCase().includes(filter)))
-                    .forEach(coin => {
-                        const isActive = coin.symbol === this.state.market.activeSymbol;
-                        const price = this.state.portfolio.prices[coin.id]?.usd || 0;
-                        const prevPrice = this.state.portfolio.prevPrices[coin.id] || price;
-                        
-                        let flashClass = '';
-                        let textClass = 'text-white';
-                        if (price > prevPrice) { flashClass = 'flash-up'; textClass = 'price-up'; }
-                        else if (price < prevPrice) { flashClass = 'flash-down'; textClass = 'price-down'; }
-
-                        const div = document.createElement('div');
-                        div.className = `flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all group mb-1.5 active:scale-[0.98] 
-                                        ${isActive ? 'bg-pink-500/10 border border-pink-500/30 shadow-[0_0_15px_rgba(255,0,122,0.1)]' : 'hover:bg-[#1c2128]'} ${flashClass}`;
-                        div.onclick = () => this.changeChartSymbol(coin.symbol);
-                        div.innerHTML = `
-                            <div class="flex items-center space-x-3">
-                                <img src="https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png" 
-                                     class="w-7 h-7 rounded-full border border-gray-700 bg-gray-800 p-0.5" onerror="this.src='https://via.placeholder.com/28/30363d/white?text=${coin.sub[0]}'">
-                                <div class="flex flex-col">
-                                    <span class="text-[12px] font-black ${isActive ? 'text-pink-500' : 'group-hover:text-pink-500'} transition-colors">${coin.sub}</span>
-                                    <span class="text-[9px] text-gray-500 font-bold uppercase">BINANCE</span>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[11px] font-black ${textClass}">${price > 0 ? '$' + this.utils.fmt(price) : '---'}</p>
-                            </div>
-                        `;
-                        container.appendChild(div);
-                    });
-            },
-
-            // [Portfolio Logic]
+            // [Optimized Renderer]
             renderPortfolio() {
                 const container = document.getElementById('portfolio-list');
                 const emptyMsg = document.getElementById('empty-msg');
-                const slotIdx = JamApp.state.portfolio.currentSlot || 0;
+                const slotIdx = this.state.portfolio.currentSlot || 0;
                 const slotData = this.state.portfolio.slots[slotIdx];
                 
                 container.innerHTML = '';
-                let totalValUSD = 0, totalCostUSD = 0;
-
                 if (slotData.length === 0) {
                     emptyMsg.classList.remove('hidden');
                 } else {
                     emptyMsg.classList.add('hidden');
                     slotData.forEach((asset, idx) => {
-                        const curPriceUSD = this.state.portfolio.prices[asset.id]?.usd || 0;
-                        const isPriceValid = curPriceUSD > 0;
                         const isUpbit = asset.exchange === 'upbit';
-                        const symbol = isUpbit ? '₩' : '$';
-                        
-                        // Calculation base
-                        let displayCurPrice, displayVal, displayCost, displayProfit;
-                        
-                        if (isUpbit) {
-                            displayCurPrice = curPriceUSD * this.state.system.usdRate;
-                            displayVal = displayCurPrice * asset.quantity;
-                            displayCost = asset.buyPrice * asset.quantity;
-                            displayProfit = displayVal - displayCost;
-                            
-                            if (isPriceValid) {
-                                totalValUSD += (displayVal / this.state.system.usdRate);
-                                totalCostUSD += (displayCost / this.state.system.usdRate);
-                            }
-                        } else {
-                            displayCurPrice = curPriceUSD;
-                            displayVal = displayCurPrice * asset.quantity;
-                            displayCost = asset.buyPrice * asset.quantity;
-                            displayProfit = displayVal - displayCost;
-
-                            if (isPriceValid) {
-                                totalValUSD += displayVal;
-                                totalCostUSD += displayCost;
-                            }
-                        }
-
-                        const profitPct = displayCost > 0 ? (displayProfit / displayCost) * 100 : 0;
-                        const profitClass = isPriceValid ? (displayProfit >= 0 ? 'profit-glow' : 'loss-glow') : 'text-gray-500';
-                        const profitSign = displayProfit >= 0 ? '+' : '-';
-                        const profitText = isPriceValid ? `${profitSign}${symbol}${this.utils.fmt(Math.abs(displayProfit))}` : '---';
-                        const pctText = isPriceValid ? `${displayProfit >= 0 ? '+' : ''}${this.utils.fmt(profitPct, 'pct')}%` : '---';
-
-                        const symbolFormat = `BINANCE:${asset.sub}USDT`;
-                        const isActive = symbolFormat === this.state.market.activeSymbol;
                         const isEditing = this.state.portfolio.editingIndex === idx;
-                        
                         const card = document.createElement('div');
-                        card.className = `bg-[#0d1117] border border-gray-800 p-4 rounded-2xl flex flex-col transition-all cursor-pointer hover:border-gray-600 ${isActive ? 'card-active ring-1 ring-pink-500/50' : ''}`;
+                        card.className = `bg-[#0d1117] border border-gray-800 p-4 rounded-2xl flex flex-col transition-all cursor-pointer hover:border-gray-600`;
                         
+                        const chartSymbol = isUpbit ? `UPBIT:${asset.sub}KRW` : `BINANCE:${asset.sub}USDT`;
+
                         if (!isEditing) {
-                            card.onclick = () => this.changeChartSymbol(symbolFormat);
+                            card.onclick = () => this.changeChartSymbol(chartSymbol);
                             card.innerHTML = `
                                 <div class="flex justify-between items-start mb-2">
                                     <div class="flex items-center space-x-2">
@@ -608,11 +515,12 @@
                                 <div class="flex justify-between items-end">
                                     <div class="text-[10px] text-gray-500 font-bold space-y-0.5">
                                         <p>HOLD: <span class="text-gray-300">${this.utils.fmt(asset.quantity, 'num')}</span></p>
-                                        <p>VAL: <span class="text-gray-300">${isPriceValid ? symbol + this.utils.fmt(displayVal) : '---'}</span></p>
+                                        <p>VAL: <span id="val-val-${idx}" class="text-gray-300">---</span></p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-[11px] font-black leading-none ${profitClass} mb-1">${profitText}</p>
-                                        <p class="text-sm font-black ${profitClass}">${pctText}</p>
+                                        <p id="profit-val-${idx}" class="text-[11px] font-black leading-none text-gray-500 mb-1">---</p>
+                                        <p id="pct-val-${idx}" class="text-sm font-black text-gray-500">---</p>
+                                        <p id="price-val-${idx}" class="hidden"></p>
                                     </div>
                                 </div>`;
                         } else {
@@ -626,7 +534,7 @@
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="flex flex-col">
-                                        <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Price (${symbol})</label>
+                                        <label class="text-[8px] text-gray-500 font-black uppercase mb-1">Price</label>
                                         <input type="text" id="edit-price-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.buyPrice, 'num')}" class="w-full bg-[#1c2128] border border-gray-700 rounded-lg px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500">
                                     </div>
                                     <div class="flex flex-col">
@@ -638,38 +546,59 @@
                         container.appendChild(card);
                     });
                 }
-
-                // Global totals always in USD for consistency in slot-level summary
-                const totalProfitUSD = totalValUSD - totalCostUSD;
-                document.getElementById('total-balance').innerText = `$${this.utils.fmt(totalValUSD)}`;
-                const profitAmtEl = document.getElementById('total-profit-amt');
-                const profitSign = totalProfitUSD >= 0 ? '+' : '-';
-                profitAmtEl.innerText = `${profitSign}$${this.utils.fmt(Math.abs(totalProfitUSD))}`;
-                profitAmtEl.className = `text-xl font-black ${totalProfitUSD >= 0 ? 'profit-glow' : 'loss-glow'}`;
-
+                this.updateRealtimeUI();
                 this.updateSlotUI();
             },
 
-            // [Actions] Portfolio Management
+            utils: {
+                fmt(val, type = 'cur') {
+                    if (val === undefined || val === null || isNaN(val)) return '0';
+                    let options = { minimumFractionDigits: 0, maximumFractionDigits: 2 };
+                    if (type === 'pct') options = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
+                    else if (type === 'num') options = { maximumFractionDigits: 8 };
+                    return Number(val).toLocaleString(undefined, options);
+                },
+                formatInput(el) {
+                    let val = el.value.replace(/,/g, '');
+                    if (val === "" || isNaN(val.replace('.', ''))) return;
+                    const parts = val.split(".");
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    el.value = parts.join(".");
+                },
+                unformat(str) { return parseFloat(str.replace(/,/g, '')) || 0; }
+            },
+
+            init() {
+                this.syncExchangeRate();
+                setInterval(() => this.syncExchangeRate(), 60000);
+                this.ws.init();
+                this.renderMarketList();
+                this.populateCoinSelect();
+                this.renderPortfolio();
+                this.changeChartSymbol(this.state.market.activeSymbol);
+                this.hub.render();
+                console.log("💎 JAM Engine v2.0 Live");
+            },
+
+            // [Existing Actions]
             setExchange(ex) {
                 this.state.portfolio.inputExchange = ex;
-                const upBtn = document.getElementById('ex-upbit');
-                const bnBtn = document.getElementById('ex-binance');
-                const unitPrice = document.getElementById('unit-price');
-
-                if (ex === 'upbit') {
-                    upBtn.classList.add('jam-bg', 'text-white');
-                    upBtn.classList.remove('text-gray-500');
-                    bnBtn.classList.remove('jam-bg', 'text-white');
-                    bnBtn.classList.add('text-gray-500');
-                    unitPrice.innerText = '₩';
-                } else {
-                    bnBtn.classList.add('jam-bg', 'text-white');
-                    bnBtn.classList.remove('text-gray-500');
-                    upBtn.classList.remove('jam-bg', 'text-white');
-                    upBtn.classList.add('text-gray-500');
-                    unitPrice.innerText = '$';
-                }
+                document.getElementById('ex-upbit').className = `px-2 py-0.5 text-[8px] font-black rounded transition-all ${ex==='upbit' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'}`;
+                document.getElementById('ex-binance').className = `px-2 py-0.5 text-[8px] font-black rounded transition-all ${ex==='binance' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'}`;
+                document.getElementById('unit-price').innerText = ex === 'upbit' ? '₩' : '$';
+            },
+            addAsset() {
+                const coinData = document.getElementById('p-coin-select').value;
+                const price = this.utils.unformat(document.getElementById('p-buy-price').value);
+                const qty = this.utils.unformat(document.getElementById('p-quantity').value);
+                if (!coinData || price <= 0 || qty <= 0) return alert("Invalid inputs");
+                const info = JSON.parse(coinData);
+                this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].push({ 
+                    id: info.id, sub: info.sub, buyPrice: price, quantity: qty, exchange: this.state.portfolio.inputExchange 
+                });
+                this.save();
+                document.getElementById('p-buy-price').value = '';
+                document.getElementById('p-quantity').value = '';
             },
             startEdit(idx) { 
                 const asset = this.state.portfolio.slots[this.state.portfolio.currentSlot || 0][idx];
@@ -677,205 +606,83 @@
                 this.state.portfolio.editingIndex = idx; 
                 this.renderPortfolio(); 
             },
-            cancelEdit() { this.state.portfolio.editingIndex = null; this.renderPortfolio(); },
             saveEdit(idx) {
-                const newPrice = this.utils.unformat(document.getElementById(`edit-price-${idx}`).value);
-                const newQty = this.utils.unformat(document.getElementById(`edit-qty-${idx}`).value);
-                if (isNaN(newPrice) || isNaN(newQty) || newPrice < 0 || newQty < 0) return alert("Invalid inputs");
-                
+                const p = this.utils.unformat(document.getElementById(`edit-price-${idx}`).value);
+                const q = this.utils.unformat(document.getElementById(`edit-qty-${idx}`).value);
                 const asset = this.state.portfolio.slots[this.state.portfolio.currentSlot || 0][idx];
-                asset.buyPrice = newPrice;
-                asset.quantity = newQty;
-                // Keep the original exchange it was saved with
-                
+                asset.buyPrice = p; asset.quantity = q;
                 this.state.portfolio.editingIndex = null;
                 this.save();
             },
-            addAsset() {
-                const coinData = document.getElementById('p-coin-select').value;
-                const price = this.utils.unformat(document.getElementById('p-buy-price').value);
-                const qty = this.utils.unformat(document.getElementById('p-quantity').value);
-                if (!coinData || isNaN(price) || isNaN(qty) || price <= 0 || qty <= 0) return alert("Fill all fields with valid numbers");
-                
-                const info = JSON.parse(coinData);
-                this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].push({ 
-                    id: info.id, 
-                    sub: info.sub, 
-                    buyPrice: price, 
-                    quantity: qty,
-                    exchange: this.state.portfolio.inputExchange
+            removeAsset(idx) { if (confirm("Remove?")) { this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].splice(idx, 1); this.save(); } },
+            save() { localStorage.setItem('jam_data_v2', JSON.stringify(this.state.portfolio.slots)); this.renderPortfolio(); },
+            switchSlot(idx) { this.state.portfolio.currentSlot = idx; this.renderPortfolio(); },
+            
+            updateSlotUI() {
+                [0,1,2].forEach(i => {
+                    const btn = document.getElementById(`pslot-${i}`);
+                    if (btn) btn.className = `px-4 py-1.5 rounded-lg border text-[10px] font-black bg-[#1c2128] transition-all ${i === (this.state.portfolio.currentSlot || 0) ? 'border-pink-500' : 'border-gray-700 opacity-50'}`;
                 });
-                
-                this.save();
-                this.ws.init(); 
-                document.getElementById('p-buy-price').value = '';
-                document.getElementById('p-quantity').value = '';
-            },
-            removeAsset(idx) {
-                if (confirm("Remove this asset?")) {
-                    this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].splice(idx, 1);
-                    this.save();
-                }
             },
 
-            // [Data] REST Price Sync (Fallback)
-            async syncPrices() {
-                const ids = [...new Set([
-                    ...this.cryptoList.map(c => c.id),
-                    ...this.state.portfolio.slots.flat().map(a => a.id)
-                ])].join(',');
-                
-                try {
-                    const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
-                    if (!res.ok) throw new Error("API Error");
-                    const data = await res.json();
-                    
-                    for (const id in data) {
-                        if (!this.state.portfolio.prices[id]) this.state.portfolio.prices[id] = { usd: 0 };
-                        this.state.portfolio.prices[id].usd = data[id].usd;
-                    }
-                    this.state.system.needsRender = true;
-                } catch (e) { console.warn("Polling failed"); }
+            renderMarketList() {
+                const container = document.getElementById('coin-list');
+                container.innerHTML = '';
+                this.cryptoList.filter(c => c.category === this.state.market.current).forEach(coin => {
+                    const price = this.state.portfolio.realtimePrices.binance[coin.id] || 0;
+                    const div = document.createElement('div');
+                    div.className = `flex items-center justify-between p-3 rounded-xl cursor-pointer hover:bg-[#1c2128] mb-1.5 transition-all`;
+                    div.onclick = () => { this.changeChartSymbol(coin.symbol); this.renderMarketList(); };
+                    div.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <img src="https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png" class="w-7 h-7 rounded-full border border-gray-700 bg-gray-800 p-0.5" onerror="this.src='https://via.placeholder.com/28'">
+                            <div class="flex flex-col"><span class="text-[12px] font-black ${coin.symbol === this.state.market.activeSymbol ? 'text-pink-500' : ''}">${coin.sub}</span><span class="text-[9px] text-gray-500">BINANCE</span></div>
+                        </div>
+                        <div class="text-right text-[11px] font-black">${price > 0 ? '$' + this.utils.fmt(price) : '---'}</div>`;
+                    container.appendChild(div);
+                });
             },
 
-            // [UI Navigation]
-            switchMarket(tabId) {
+            switchMarket(tabId) { 
                 document.getElementById(`mtab-${this.state.market.current}`).classList.remove('tab-active');
                 this.state.market.current = tabId;
                 document.getElementById(`mtab-${tabId}`).classList.add('tab-active');
                 this.renderMarketList();
             },
-            switchSlot(slotIdx) {
-                const oldSlot = this.state.portfolio.currentSlot || 0;
-                document.getElementById(`pslot-${oldSlot}`).classList.add('opacity-50');
-                this.state.portfolio.currentSlot = slotIdx;
-                document.getElementById(`pslot-${slotIdx}`).classList.remove('opacity-50');
-                this.renderPortfolio();
-            },
-            updateSlotUI() {
-                this.state.portfolio.slots.forEach((slot, idx) => {
-                    const btn = document.getElementById(`pslot-${idx}`);
-                    btn.classList.remove('border-green-500', 'border-red-500', 'border-pink-500');
-                    if (slot.length > 0) {
-                        let costUSD = 0, valUSD = 0;
-                        slot.forEach(a => {
-                            const curPriceUSD = this.state.portfolio.prices[a.id]?.usd || 0;
-                            const isUpbit = a.exchange === 'upbit';
-                            
-                            if (isUpbit) {
-                                costUSD += (a.buyPrice * a.quantity) / this.state.system.usdRate;
-                                valUSD += (curPriceUSD * a.quantity);
-                            } else {
-                                costUSD += a.buyPrice * a.quantity;
-                                valUSD += curPriceUSD * a.quantity;
-                            }
-                        });
-                        btn.classList.add(valUSD >= costUSD ? 'border-green-500' : 'border-red-500');
-                    } else if (idx === (this.state.portfolio.currentSlot || 0)) {
-                        btn.classList.add('border-pink-500');
-                    }
-                });
-            },
+
             populateCoinSelect() {
-                const select = document.getElementById('p-coin-select');
-                select.innerHTML = '<option value="" disabled selected>Select Coin</option>';
+                const s = document.getElementById('p-coin-select');
+                s.innerHTML = '<option value="" disabled selected>Select Coin</option>';
                 this.cryptoList.forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = JSON.stringify({id: c.id, sub: c.sub});
-                    opt.innerText = `${c.sub} - ${c.name}`;
-                    select.appendChild(opt);
+                    const o = document.createElement('option');
+                    o.value = JSON.stringify({id: c.id, sub: c.sub});
+                    o.innerText = `${c.sub} - ${c.name}`;
+                    s.appendChild(o);
                 });
             },
-            save() {
-                localStorage.setItem('jam_data_v2', JSON.stringify(this.state.portfolio.slots));
-                this.renderPortfolio();
-            },
 
-            // [CRYPTO HUB] Logic
             hub: {
-                /**
-                 * Adds a new custom link via 2-step user prompts
-                 */
+                save() { localStorage.setItem('jam_hub_links', JSON.stringify(JamApp.state.hubLinks)); },
                 addLink() {
-                    // Step 1: Site Name
-                    const name = prompt("Enter the site name to display:");
-                    if (!name || name.trim() === "") return;
-
-                    // Step 2: URL
-                    let url = prompt("Enter the full URL (starting with http:// or https://):");
-                    if (!url || url.trim() === "") return;
-
-                    // Auto-prepend https:// if protocol is missing
-                    if (!/^https?:\/\//i.test(url)) {
-                        url = 'https://' + url;
-                    }
-                    
-                    // Update state and persistence
-                    JamApp.state.hubLinks.push({ name: name.trim(), url: url.trim() });
-                    this.save();
-                    
-                    // Trigger global renderer
-                    JamApp.state.system.needsRender = true;
+                    const n = prompt("Name:"); const u = prompt("URL:");
+                    if (n && u) { JamApp.state.hubLinks.push({ name: n, url: u.startsWith('http') ? u : 'https://'+u }); this.save(); this.render(); }
                 },
-
-                /**
-                 * Removes a link by index (triggered via right-click)
-                 */
-                removeLink(idx) {
-                    const link = JamApp.state.hubLinks[idx];
-                    if (confirm(`Remove '${link.name}' from your terminal?`)) {
-                        JamApp.state.hubLinks.splice(idx, 1);
-                        this.save();
-                        JamApp.state.system.needsRender = true;
-                    }
-                },
-
-                /**
-                 * Persists hubLinks state to localStorage
-                 */
-                save() {
-                    localStorage.setItem('jam_hub_links', JSON.stringify(JamApp.state.hubLinks));
-                },
-
-                /**
-                 * Renders dynamic custom links into the hub grid
-                 */
                 render() {
-                    const container = document.getElementById('hub-grid');
-                    if (!container) return;
-                    
-                    // Clear only dynamically added custom hub links
+                    const c = document.getElementById('hub-grid');
+                    if (!c) return;
                     document.querySelectorAll('.custom-hub-link').forEach(el => el.remove());
-                    
-                    const addButton = container.lastElementChild;
-                    JamApp.state.hubLinks.forEach((link, idx) => {
+                    JamApp.state.hubLinks.forEach((l, i) => {
                         const a = document.createElement('a');
-                        a.href = link.url;
-                        a.target = "_blank";
-                        a.className = "hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform px-3 gap-2 custom-hub-link";
-                        
-                        // Extract hostname for favicon retrieval
-                        let domain = "";
-                        try { domain = new URL(link.url).hostname; } catch(e) { domain = ""; }
-
-                        a.innerHTML = `
-                            <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="w-4 h-4" onerror="this.style.display='none'">
-                            ${link.name.toUpperCase()}
-                        `;
-
-                        // Right-click (Context Menu) to remove
-                        a.oncontextmenu = (e) => {
-                            e.preventDefault();
-                            this.removeLink(idx);
-                        };
-
-                        container.insertBefore(a, addButton);
+                        a.href = l.url; a.target = "_blank"; a.className = "hub-btn py-2.5 rounded-xl text-[11px] font-black px-3 gap-2 custom-hub-link";
+                        const d = new URL(l.url).hostname;
+                        a.innerHTML = `<img src="https://www.google.com/s2/favicons?domain=${d}&sz=32" class="w-4 h-4">${l.name.toUpperCase()}`;
+                        a.oncontextmenu = (e) => { e.preventDefault(); if (confirm("Remove?")) { JamApp.state.hubLinks.splice(i, 1); this.save(); this.render(); } };
+                        c.insertBefore(a, c.lastElementChild);
                     });
                 }
             }
         };
 
-        // Initialize App
         window.onload = () => JamApp.init();
     </script>
 
