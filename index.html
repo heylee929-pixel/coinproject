@@ -312,6 +312,15 @@
          * JAM APP - Core Application Object (v2.0 Phase 2)
          */
         const JamApp = {
+            // [Logo Mapping for TradFi]
+            tvLogoMapping: {
+                "TSLA": "tesla", "AAPL": "apple", "AMZN": "amazon", "NVDA": "nvidia",
+                "MSFT": "microsoft", "GOOGL": "google", "META": "facebook",
+                "COIN": "coinbase", "MSTR": "microstrategy",
+                "XAU": "gold", "XAG": "silver", "BZ": "crude-oil",
+                "CL": "crude-oil", "COPPER": "copper", "NATGAS": "natural-gas"
+            },
+
             // 업비트 상장 여부 추가
             cryptoList: [
                 { symbol: "BINANCE:BTCUSDT", name: "Bitcoin", sub: "BTC", id: "bitcoin", category: "CRYPTO", upbit: true },
@@ -776,6 +785,18 @@
                         const price = ex === 'upbit' ? this.state.portfolio.realtimePrices.upbit[coin.id] : this.state.portfolio.realtimePrices.binance[coin.id];
                         const symbol = ex === 'upbit' ? '₩' : '$';
                         const chartSymbol = ex === 'upbit' ? `UPBIT:${coin.sub}KRW` : coin.symbol;
+
+                        // Logo URL & Style Logic
+                        let logoUrl = `https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png`;
+                        let logoBg = "bg-gray-900";
+
+                        if (coin.category === 'STOCK' || coin.category === 'COMMODITY') {
+                            const mappingId = this.tvLogoMapping[coin.sub];
+                            if (mappingId) {
+                                logoUrl = `https://s3-symbol-logo.tradingview.com/${mappingId}--big.svg`;
+                                logoBg = "bg-white";
+                            }
+                        }
                         
                         const div = document.createElement('div');
                         div.className = `coin-item-compact group`;
@@ -788,7 +809,9 @@
                         
                         div.innerHTML = `
                             <div class="coin-name-wrap">
-                                <img src="https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png" class="w-5 h-5 rounded-full border border-gray-800 bg-gray-900 p-0.5 flex-shrink-0" onerror="this.src='https://via.placeholder.com/20'">
+                                <img src="${logoUrl}" 
+                                     class="w-5 h-5 rounded-full border border-gray-800 ${logoBg} p-0.5 flex-shrink-0" 
+                                     onerror="JamApp.utils.handleImgError(this, '${coin.sub[0]}')">
                                 <span class="coin-symbol-text ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-gray-200'} uppercase">
                                     ${coin.sub} <span class="text-[9px] text-gray-500 font-medium normal-case">(${coin.name})</span>
                                 </span>
