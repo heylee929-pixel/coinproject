@@ -13,6 +13,19 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #0d1117; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
         
+        /* Layout Configuration (35% | 50% | 15%) */
+        .jam-grid-container {
+            display: grid;
+            grid-template-columns: 35% 50% 15%;
+            gap: 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+        }
+        @media (max-width: 1024px) {
+            .jam-grid-container { grid-template-columns: 1fr; }
+        }
+
         /* JAM 포인트 컬러 및 효과 */
         .jam-accent { color: #FF007A; text-shadow: 0 0 15px rgba(255, 0, 122, 0.4); }
         .jam-bg { background-color: #FF007A; }
@@ -39,6 +52,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            width: 100%;
         }
         .hub-btn:hover { 
             border-color: #FF007A; 
@@ -97,11 +111,11 @@
     <!-- ==========================================
          [3] MAIN CONTENT
          ========================================== -->
-    <main class="flex-grow max-w-[1600px] mx-auto w-full px-4 py-6">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <main class="flex-grow w-full">
+        <div class="jam-grid-container">
             
-            <!-- [A] Market List (Left) -->
-            <div class="lg:col-span-2">
+            <!-- [A] Market List (Left - 35%) -->
+            <div>
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-160px)] shadow-2xl">
                     <!-- Exchange Switcher -->
                     <div class="p-2 border-b border-gray-800 bg-[#0d1117]">
@@ -123,8 +137,8 @@
                 </section>
             </div>
 
-            <!-- [B] Chart & Portfolio (Center) -->
-            <div class="lg:col-span-7 space-y-6">
+            <!-- [B] Chart & Portfolio (Center - 50%) -->
+            <div class="space-y-6">
                 <!-- TradingView Chart -->
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
                     <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#0d1117]">
@@ -200,87 +214,44 @@
                 </section>
             </div>
 
-            <!-- [C] CRYPTO HUB (Right) -->
-            <div class="lg:col-span-3">
+            <!-- [C] CRYPTO HUB (Right - 15%) -->
+            <div>
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-160px)] shadow-2xl relative">
                     <div class="p-4 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
-                        <h3 class="font-black text-[14px] uppercase tracking-[0.2em] jam-accent">CRYPTO HUB</h3>
+                        <h3 class="font-black text-[12px] uppercase tracking-[0.2em] jam-accent">HUB</h3>
                     </div>
                     
-                    <div class="p-4 flex-grow overflow-y-auto custom-scrollbar space-y-6">
-                        <!-- Upper Widget Area (Market Pulse) -->
-                        <div class="space-y-4 mb-2">
-                            <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Market Pulse</h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <!-- Card 1: KIMCHI PREMIUM -->
-                                <a href="https://kimpga.com/" target="_blank" class="flex flex-col items-center justify-between p-4 h-32 bg-[#161b22] border border-gray-800 rounded-2xl hover:border-[#FF007A] hover:shadow-[0_0_20px_rgba(255,0,122,0.3)] transition-all group">
-                                    <span class="text-[8px] font-black text-gray-500 uppercase self-start tracking-tighter">KIMCHI PREMIUM</span>
-                                    <span class="text-[11px] font-black text-white group-hover:text-[#FF007A] transition-colors text-center leading-tight">CHECK<br>PREMIUM DATA</span>
-                                    <span class="text-[8px] font-bold text-gray-600 self-end">(Kimpga.com)</span>
-                                </a>
-                                <!-- Card 2: FEAR & GREED -->
-                                <a href="https://coinmarketcap.com/ko/charts/fear-and-greed-index/" target="_blank" class="flex flex-col items-center justify-between p-4 h-32 bg-[#161b22] border border-gray-800 rounded-2xl hover:border-[#FF007A] hover:shadow-[0_0_20px_rgba(255,0,122,0.3)] transition-all group">
-                                    <span class="text-[8px] font-black text-gray-500 uppercase self-start tracking-tighter">FEAR & GREED</span>
-                                    <span class="text-[11px] font-black text-white group-hover:text-[#FF007A] transition-colors text-center leading-tight">CHECK<br>SENTIMENT</span>
-                                    <span class="text-[8px] font-bold text-gray-600 self-end">(CoinMarketCap)</span>
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Center Button Area (10 Sites) -->
-                        <div class="space-y-3">
-                            <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Global Terminal</h4>
-                            <div class="grid grid-cols-2 gap-2" id="hub-grid">
-                                <a href="https://upbit.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=upbit.com&sz=32" class="w-4 h-4" alt="">
-                                    UPBIT
-                                </a>
-                                <a href="https://www.bithumb.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=bithumb.com&sz=32" class="w-4 h-4" alt="">
-                                    BITHUMB
-                                </a>
-                                <a href="https://www.binance.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=binance.com&sz=32" class="w-4 h-4" alt="">
-                                    BINANCE
-                                </a>
-                                <a href="https://www.bitget.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=bitget.com&sz=32" class="w-4 h-4" alt="">
-                                    BITGET
-                                </a>
-                                <a href="https://www.okx.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=okx.com&sz=32" class="w-4 h-4" alt="">
-                                    OKX
-                                </a>
-                                <a href="https://coinmarketcap.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=coinmarketcap.com&sz=32" class="w-4 h-4" alt="">
-                                    COINMARKETCAP
-                                </a>
-                                <a href="https://dexscreener.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=dexscreener.com&sz=32" class="w-4 h-4" alt="">
-                                    DEXSCREENER
-                                </a>
-                                <a href="https://www.tradingview.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=tradingview.com&sz=32" class="w-4 h-4" alt="">
-                                    TRADINGVIEW
-                                </a>
-                                <a href="https://coinness.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=coinness.com&sz=32" class="w-4 h-4" alt="">
-                                    COINNESS
-                                </a>
-                                <a href="https://dune.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
-                                    <img src="https://www.google.com/s2/favicons?domain=dune.com&sz=32" class="w-4 h-4" alt="">
-                                    DUNE ANALYTICS
-                                </a>
-                                <button onclick="JamApp.hub.addLink()" class="hub-btn py-2.5 rounded-xl text-[11px] font-black hover:scale-[1.02] transform transition-transform border-dashed border-gray-600 opacity-60 hover:opacity-100 hover:border-pink-500">
-                                    [+] ADD CUSTOM
-                                </button>
-                            </div>
+                    <div class="p-3 flex-grow overflow-y-auto custom-scrollbar">
+                        <div class="flex flex-col space-y-2" id="hub-grid">
+                            <a href="https://upbit.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[10px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                <img src="https://www.google.com/s2/favicons?domain=upbit.com&sz=32" class="w-3.5 h-3.5" alt="">
+                                UPBIT
+                            </a>
+                            <a href="https://www.binance.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[10px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                <img src="https://www.google.com/s2/favicons?domain=binance.com&sz=32" class="w-3.5 h-3.5" alt="">
+                                BINANCE
+                            </a>
+                            <a href="https://www.okx.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[10px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                <img src="https://www.google.com/s2/favicons?domain=okx.com&sz=32" class="w-3.5 h-3.5" alt="">
+                                OKX
+                            </a>
+                            <a href="https://coinmarketcap.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[10px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                <img src="https://www.google.com/s2/favicons?domain=coinmarketcap.com&sz=32" class="w-3.5 h-3.5" alt="">
+                                CMC
+                            </a>
+                            <a href="https://coinness.com" target="_blank" class="hub-btn py-2.5 rounded-xl text-[10px] font-black hover:scale-[1.02] transform transition-transform gap-2 px-3">
+                                <img src="https://www.google.com/s2/favicons?domain=coinness.com&sz=32" class="w-3.5 h-3.5" alt="">
+                                COINNESS
+                            </a>
+                            <button onclick="JamApp.hub.addLink()" class="hub-btn py-2.5 rounded-xl text-[10px] font-black hover:scale-[1.02] transform transition-transform border-dashed border-gray-600 opacity-60 hover:opacity-100 hover:border-pink-500">
+                                [+] ADD
+                            </button>
                         </div>
                     </div>
 
                     <!-- Bottom Decoration -->
-                    <div class="p-3 bg-[#0d1117]/50 border-t border-gray-800/50">
-                        <p class="text-[8px] text-gray-600 font-mono tracking-tighter animate-pulse uppercase">&gt; HUB OPERATIONAL SYSTEM_v2.0_STABLE</p>
+                    <div class="p-2 bg-[#0d1117]/50 border-t border-gray-800/50">
+                        <p class="text-[7px] text-gray-600 font-mono tracking-tighter animate-pulse uppercase text-center">SYSTEM v2.0</p>
                     </div>
                 </section>
             </div>
@@ -293,7 +264,7 @@
          ========================================== -->
     <footer class="border-t border-gray-800 py-6 bg-[#0d1117]">
         <div class="max-w-[1600px] mx-auto px-4 text-center text-gray-600 text-[10px] font-bold tracking-[0.3em] uppercase">
-            &copy; 2026 CRYPTO <span class="text-pink-600">JAM</span> TERMINAL. POWERED BY TRADINGVIEW & COINGECKO.
+            &copy; 2026 CRYPTO <span class="text-pink-600">JAM</span> TERMINAL.
         </div>
     </footer>
 
@@ -321,8 +292,39 @@
                 { symbol: "BINANCE:SHIBUSDT", name: "Shiba Inu", sub: "SHIB", id: "shiba-inu", category: "CRYPTO", upbit: true },
                 { symbol: "BINANCE:PEPEUSDT", name: "Pepe", sub: "PEPE", id: "pepe", category: "CRYPTO", upbit: false },
                 { symbol: "BINANCE:FLOKIUSDT", name: "Floki", sub: "FLOKI", id: "floki", category: "CRYPTO", upbit: false },
+                
+                // [COMMODITY]
                 { symbol: "BINANCE:XAUUSDT", name: "Gold", sub: "XAU", id: "gold", category: "COMMODITY", upbit: false },
-                { symbol: "BINANCE:TSLAUSDT", name: "Tesla", sub: "TSLA", id: "tesla", category: "STOCK", upbit: false }
+                { symbol: "BINANCE:XAGUSDT", name: "Silver", sub: "XAG", id: "silver", category: "COMMODITY", upbit: false },
+                { symbol: "BINANCE:XPTUSDT", name: "Platinum", sub: "XPT", id: "platinum", category: "COMMODITY", upbit: false },
+                { symbol: "BINANCE:XPDUSDT", name: "Palladium", sub: "XPD", id: "palladium", category: "COMMODITY", upbit: false },
+                { symbol: "BINANCE:COPPERUSDT", name: "Copper", sub: "COPPER", id: "copper", category: "COMMODITY", upbit: false },
+                { symbol: "BINANCE:CLUSDT", name: "WTI Oil", sub: "CL", id: "wti-oil", category: "COMMODITY", upbit: false },
+                { symbol: "BINANCE:BZUSDT", name: "Brent Oil", sub: "BZ", id: "brent-oil", category: "COMMODITY", upbit: false },
+                { symbol: "BINANCE:NATGASUSDT", name: "Natural Gas", sub: "NATGAS", id: "natural-gas", category: "COMMODITY", upbit: false },
+                
+                // [STOCK / ETF]
+                { symbol: "BINANCE:TSLAUSDT", name: "Tesla", sub: "TSLA", id: "tesla", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:AAPLUSDT", name: "Apple", sub: "AAPL", id: "apple", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:AMZNUSDT", name: "Amazon", sub: "AMZN", id: "amazon", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:NVDAUSDT", name: "Nvidia", sub: "NVDA", id: "nvidia", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:MSFTUSDT", name: "Microsoft", sub: "MSFT", id: "microsoft", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:GOOGLUSDT", name: "Alphabet", sub: "GOOGL", id: "alphabet", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:METAUSDT", name: "Meta", sub: "META", id: "meta", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:NFLXUSDT", name: "Netflix", sub: "NFLX", id: "netflix", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:COINUSDT", name: "Coinbase", sub: "COIN", id: "coinbase", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:MSTRUSDT", name: "MicroStrategy", sub: "MSTR", id: "microstrategy", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:PLTRUSDT", name: "Palantir", sub: "PLTR", id: "palantir", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:INTCUSDT", name: "Intel", sub: "INTEL", id: "intel", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:TSMUSDT", name: "TSMC", sub: "TSM", id: "tsmc", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:MUUSDT", name: "Micron", sub: "MU", id: "micron", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:HOODUSDT", name: "Robinhood", sub: "HOOD", id: "robinhood", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:CRCLUSDT", name: "Circle", sub: "CRCL", id: "circle", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:PAYPUSDT", name: "PayPay", sub: "PAYP", id: "paypay", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:SPYUSDT", name: "S&P 500 ETF", sub: "SPY", id: "spy", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:QQQUSDT", name: "Nasdaq 100 ETF", sub: "QQQ", id: "qqq", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:EWYUSDT", name: "MSCI South Korea ETF", sub: "EWY", id: "msci-korea", category: "STOCK", upbit: false },
+                { symbol: "BINANCE:EWJUSDT", name: "MSCI Japan ETF", sub: "EWJ", id: "msci-japan", category: "STOCK", upbit: false }
             ],
 
             state: {
@@ -500,12 +502,18 @@
             changeChartSymbol(symbol) {
                 if (!symbol) return;
                 
-                let targetSymbol = symbol;
+                // 지능형 심볼 추출 (괄호 및 이름 제거)
+                let targetSymbol = symbol.split('(')[0].trim();
                 
-                // Binance 선물(USD-M) 종목은 .P 접미사 필수 (XAU, TSLA, BZ 등 TradFi 라우팅)
-                if (symbol.startsWith('BINANCE:') && (symbol.includes('XAU') || symbol.includes('TSLA') || symbol.includes('BZ'))) {
+                // Binance TradFi 종목 (COMMODITY, STOCK) 판별 및 .P 접미사 강제 적용
+                const isTradFi = this.cryptoList.some(c => 
+                    (c.category === 'COMMODITY' || c.category === 'STOCK') && 
+                    (targetSymbol.includes(c.sub) || targetSymbol === c.symbol)
+                );
+
+                if (targetSymbol.startsWith('BINANCE:') && isTradFi) {
                     if (!targetSymbol.endsWith('.P')) targetSymbol += '.P';
-                    console.log(`%c[Chart Debug] Requesting Symbol with Suffix: ${targetSymbol}`, "color: #FF007A; font-weight: bold;");
+                    console.log(`%c[Chart Debug] TradFi Routing: ${targetSymbol}`, "color: #FF007A; font-weight: bold;");
                 }
 
                 this.state.market.activeSymbol = targetSymbol;
@@ -618,14 +626,14 @@
                         if (val < threshold) {
                             // 1 미만 (또는 1000원 미만): 소수점 4~6자리 유연 표시
                             return Number(val).toLocaleString(undefined, { 
-                                minimumFractionDigits: 4, 
-                                maximumFractionDigits: 6 
+                                minimumFractionDigits: isKRW ? 2 : 4, 
+                                maximumFractionDigits: isKRW ? 2 : 6 
                             });
                         } else {
-                            // 1 이상 (또는 1000원 이상): 천 단위 쉼표 + 소수점 2자리
+                            // 1 이상 (또는 1000원 이상): 천 단위 쉼표 + 소수점 2자리 (KRW 1000 이상은 소수점 제거)
                             return Number(val).toLocaleString(undefined, { 
-                                minimumFractionDigits: 2, 
-                                maximumFractionDigits: 2 
+                                minimumFractionDigits: isKRW ? 0 : 2, 
+                                maximumFractionDigits: isKRW ? 0 : 2 
                             });
                         }
                     }
@@ -706,19 +714,30 @@
                     .forEach(coin => {
                         const price = ex === 'upbit' ? this.state.portfolio.realtimePrices.upbit[coin.id] : this.state.portfolio.realtimePrices.binance[coin.id];
                         const symbol = ex === 'upbit' ? '₩' : '$';
+                        const chartSymbol = ex === 'upbit' ? `UPBIT:${coin.sub}KRW` : coin.symbol;
                         
                         const div = document.createElement('div');
-                        div.className = `flex items-center justify-between py-1.5 px-2.5 rounded-xl cursor-pointer hover:bg-[#1c2128] mb-1 transition-all`;
+                        div.className = `flex items-center justify-between py-2.5 px-4 rounded-xl cursor-pointer hover:bg-[#1c2128] mb-1 transition-all group`;
+                        div.setAttribute('data-symbol', chartSymbol);
                         
-                        const chartSymbol = ex === 'upbit' ? `UPBIT:${coin.sub}KRW` : coin.symbol;
-                        div.onclick = () => this.changeChartSymbol(chartSymbol);
+                        div.onclick = (e) => {
+                            const sym = e.currentTarget.getAttribute('data-symbol');
+                            this.changeChartSymbol(sym);
+                        };
                         
                         div.innerHTML = `
-                            <div class="flex items-center space-x-2.5">
-                                <img src="https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png" class="w-6 h-6 rounded-full border border-gray-800 bg-gray-900 p-0.5" onerror="this.src='https://via.placeholder.com/28'">
-                                <span class="text-[11px] font-black ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-gray-200'}">${coin.sub}</span>
+                            <div class="flex items-center space-x-4">
+                                <img src="https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png" class="w-7 h-7 rounded-full border border-gray-800 bg-gray-900 p-0.5" onerror="this.src='https://via.placeholder.com/28'">
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[12px] font-black ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-gray-200'} uppercase">${coin.sub}</span>
+                                        <span class="text-[10px] font-bold text-gray-500 group-hover:text-gray-400 transition-colors">(${coin.name})</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-right text-[11px] font-black text-white">${price > 0 ? symbol + this.utils.fmt(price, ex === 'upbit' ? 'krw' : 'cur') : '---'}</div>`;
+                            <div class="text-right">
+                                <div class="text-[12px] font-black text-white tracking-tight">${price > 0 ? symbol + this.utils.fmt(price, ex === 'upbit' ? 'krw' : 'cur') : '---'}</div>
+                            </div>`;
                         container.appendChild(div);
                     });
             },
@@ -798,7 +817,7 @@
         };
 
         window.onload = () => JamApp.init();
-    </script>
-
-</body>
-</html>
+        // 메모: 코모디티, 주식종목 추가
+        </script>
+        </body>
+        </html>
