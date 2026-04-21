@@ -57,6 +57,9 @@
             white-space: nowrap;
             font-weight: 800;
             font-size: 11px;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
         }
         .coin-price-text {
             white-space: nowrap;
@@ -232,15 +235,15 @@
             <div class="jam-right-column">
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-[calc(100vh-160px)]">
                     <div class="p-3 border-b border-gray-800 bg-[#0d1117] space-y-3">
-                        <div class="flex justify-between items-center">
-                            <div class="flex space-x-1" id="portfolio-tabs">
-                                <button onclick="JamApp.switchSlot(0)" id="pslot-0" class="px-2 py-0.5 rounded-md border border-gray-700 text-[8px] font-black bg-[#1c2128] hover:border-pink-500 transition-all">1</button>
-                                <button onclick="JamApp.switchSlot(1)" id="pslot-1" class="px-2 py-0.5 rounded-md border border-gray-700 text-[8px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">2</button>
-                                <button onclick="JamApp.switchSlot(2)" id="pslot-2" class="px-2 py-0.5 rounded-md border border-gray-700 text-[8px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">3</button>
+                            <div class="flex justify-between items-center">
+                            <div class="flex space-x-1.5" id="portfolio-tabs">
+                                <button onclick="JamApp.switchSlot(0)" id="pslot-0" class="px-3 py-0.5 rounded-md border border-gray-700 text-[8px] font-black bg-[#1c2128] hover:border-pink-500 transition-all">1</button>
+                                <button onclick="JamApp.switchSlot(1)" id="pslot-1" class="px-3 py-0.5 rounded-md border border-gray-700 text-[8px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">2</button>
+                                <button onclick="JamApp.switchSlot(2)" id="pslot-2" class="px-3 py-0.5 rounded-md border border-gray-700 text-[8px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">3</button>
                             </div>
-                            <div class="flex bg-[#0d1117] rounded-md p-0.5 border border-gray-800">
-                                <button onclick="JamApp.setDisplayCurrency('KRW')" id="cur-krw" class="px-1.5 py-0.5 text-[7.5px] font-black rounded transition-all text-gray-500 hover:text-white uppercase">KRW</button>
-                                <button onclick="JamApp.setDisplayCurrency('USD')" id="cur-usd" class="px-1.5 py-0.5 text-[7.5px] font-black rounded transition-all jam-bg text-white uppercase">USD</button>
+                            <div class="flex bg-[#0d1117] rounded-md p-0.5 border border-gray-800 gap-0.5">
+                                <button onclick="JamApp.setDisplayCurrency('KRW')" id="cur-krw" class="px-3 py-0.5 text-[7.5px] font-black rounded transition-all text-gray-500 hover:text-white uppercase">KRW</button>
+                                <button onclick="JamApp.setDisplayCurrency('USD')" id="cur-usd" class="px-3 py-0.5 text-[7.5px] font-black rounded transition-all jam-bg text-white uppercase">USD</button>
                             </div>
                         </div>
                         
@@ -263,8 +266,8 @@
                             <div class="flex justify-between items-center mb-1">
                                 <p class="text-[9px] font-black text-gray-500 uppercase tracking-wider">Quick Deploy</p>
                                 <div class="flex bg-[#161b22] rounded-md p-0.5 border border-gray-800">
-                                    <button onclick="JamApp.setExchange('upbit')" id="ex-upbit" class="px-1.5 py-0.5 text-[7px] font-black rounded transition-all text-gray-500 hover:text-white uppercase">UP</button>
-                                    <button onclick="JamApp.setExchange('binance')" id="ex-binance" class="px-1.5 py-0.5 text-[7px] font-black rounded transition-all jam-bg text-white uppercase">BN</button>
+                                    <button onclick="JamApp.setExchange('upbit')" id="ex-upbit" class="px-3 py-0.5 text-[7px] font-black rounded transition-all text-gray-500 hover:text-white uppercase">UP</button>
+                                    <button onclick="JamApp.setExchange('binance')" id="ex-binance" class="px-3 py-0.5 text-[7px] font-black rounded transition-all jam-bg text-white uppercase">BN</button>
                                 </div>
                             </div>
                             <select id="p-coin-select" class="w-full bg-[#161b22] border border-gray-700 rounded-lg px-2 py-2 text-[10px] font-bold focus:outline-none focus:border-pink-500"></select>
@@ -550,8 +553,8 @@
 
             setDisplayCurrency(curr) {
                 this.state.system.displayCurrency = curr;
-                document.getElementById('cur-krw').className = `px-1.5 py-0.5 text-[7.5px] font-black rounded transition-all ${curr === 'KRW' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
-                document.getElementById('cur-usd').className = `px-1.5 py-0.5 text-[7.5px] font-black rounded transition-all ${curr === 'USD' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
+                document.getElementById('cur-krw').className = `px-3 py-0.5 text-[7.5px] font-black rounded transition-all ${curr === 'KRW' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
+                document.getElementById('cur-usd').className = `px-3 py-0.5 text-[7.5px] font-black rounded transition-all ${curr === 'USD' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
                 this.updateRealtimeUI();
             },
 
@@ -666,7 +669,7 @@
             updateSlotUI() {
                 [0,1,2].forEach(i => {
                     const btn = document.getElementById(`pslot-${i}`);
-                    if (btn) btn.className = `px-2 py-0.5 rounded-md border text-[8px] font-black bg-[#1c2128] transition-all ${i === (this.state.portfolio.currentSlot || 0) ? 'border-pink-500' : 'border-gray-700 opacity-50'}`;
+                    if (btn) btn.className = `px-3 py-0.5 rounded-md border text-[8px] font-black bg-[#1c2128] transition-all ${i === (this.state.portfolio.currentSlot || 0) ? 'border-pink-500' : 'border-gray-700 opacity-50'}`;
                 });
             },
 
@@ -786,7 +789,9 @@
                         div.innerHTML = `
                             <div class="coin-name-wrap">
                                 <img src="https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png" class="w-5 h-5 rounded-full border border-gray-800 bg-gray-900 p-0.5 flex-shrink-0" onerror="this.src='https://via.placeholder.com/20'">
-                                <span class="coin-symbol-text ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-gray-200'} uppercase">${coin.sub}</span>
+                                <span class="coin-symbol-text ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-gray-200'} uppercase">
+                                    ${coin.sub} <span class="text-[9px] text-gray-500 font-medium normal-case">(${coin.name})</span>
+                                </span>
                             </div>
                             <div class="coin-price-text text-white tracking-tight">
                                 ${price > 0 ? symbol + this.utils.fmt(price, ex === 'upbit' ? 'krw' : 'cur') : '<span class="italic text-gray-600 animate-pulse text-[10px]">...</span>'}
@@ -797,8 +802,8 @@
 
             setExchange(ex) {
                 this.state.portfolio.inputExchange = ex;
-                document.getElementById('ex-upbit').className = `px-2 py-0.5 text-[8px] font-black rounded transition-all ${ex==='upbit' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
-                document.getElementById('ex-binance').className = `px-2 py-0.5 text-[8px] font-black rounded transition-all ${ex==='binance' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
+                document.getElementById('ex-upbit').className = `px-3 py-0.5 text-[8px] font-black rounded transition-all ${ex==='upbit' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
+                document.getElementById('ex-binance').className = `px-3 py-0.5 text-[8px] font-black rounded transition-all ${ex==='binance' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
                 document.getElementById('unit-price').innerText = ex === 'upbit' ? '₩' : '$';
             },
 
