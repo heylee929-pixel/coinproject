@@ -16,48 +16,16 @@
         /* JAM 포인트 컬러 및 효과 */
         .jam-accent { color: #FF007A; text-shadow: 0 0 15px rgba(255, 0, 122, 0.4); }
         .jam-bg { background-color: #FF007A; }
-        .tab-active { border-bottom: 2px solid #FF007A; color: #FF007A; }
-        .active-blue { background-color: #0052ff !important; color: #ffffff !important; }
+        .tab-active { color: #FF007A; background-color: #1c2128; box-shadow: inset 0 -2px 0 #FF007A; }
         
-        /* 수익/손실 네온 효과 제거 - 깔끔한 텍스트 */
-        .profit-glow { color: #00d1ff !important; font-weight: 800; }
-        .loss-glow { color: #ff4d4d !important; font-weight: 800; }
+        /* 수익/손실 네온 효과 */
+        .profit-glow { color: #00d1ff !important; text-shadow: 0 0 10px rgba(0, 209, 255, 0.6); font-weight: 800; }
+        .loss-glow { color: #ff4d4d !important; text-shadow: 0 0 10px rgba(255, 77, 77, 0.6); font-weight: 800; }
         
         /* 실시간 시세 변동 플래시 효과 */
         .price-up { color: #00ffa2 !important; transition: all 0.2s; }
         .price-down { color: #ff007a !important; transition: all 0.2s; }
-        .flash-up { background-color: rgba(0, 255, 162, 0.1) !important; transition: background-color 0.3s; }
-        .flash-down { background-color: rgba(255, 0, 122, 0.1) !important; transition: background-color 0.3s; }
         
-        /* [V2.0] Compact Card & High-Visibility Styles */
-        .asset-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            max-width: 320px;
-            transition: all 0.2s ease;
-        }
-        .asset-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-        .roi-badge {
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 800;
-        }
-        .roi-up { background: rgba(0, 209, 255, 0.15); color: #00d1ff; }
-        .roi-down { background: rgba(255, 77, 77, 0.15); color: #ff4d4d; }
-        
-        /* 카드 활성화(Active) 스타일 */
-        .card-active { 
-            border-color: #FF007A !important; 
-            box-shadow: 0 0 20px rgba(255, 0, 122, 0.2);
-            transform: scale(1.02);
-            background-color: rgba(255, 0, 122, 0.05) !important;
-        }
-
         @keyframes jam-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .jam-loading { animation: jam-pulse 1.5s infinite; }
 
@@ -135,21 +103,23 @@
             <!-- [A] Market List (Left) -->
             <div class="lg:col-span-2">
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden flex flex-col h-[calc(100vh-160px)] shadow-2xl">
-                    <!-- Exchange Switch Tier -->
-                    <div class="flex border-b border-gray-800 bg-[#0d1117] p-1">
-                        <button onclick="JamApp.switchExchangeMode('upbit')" id="ex-tab-upbit" class="flex-1 py-2 text-[10px] font-black text-gray-500 hover:text-white transition-all rounded-lg">UPBIT</button>
-                        <button onclick="JamApp.switchExchangeMode('binance')" id="ex-tab-binance" class="flex-1 py-2 text-[10px] font-black active-blue text-white transition-all rounded-lg">BINANCE</button>
+                    <!-- Exchange Switcher -->
+                    <div class="p-2 border-b border-gray-800 bg-[#0d1117]">
+                        <div class="flex bg-[#161b22] rounded-lg p-1 border border-gray-800">
+                            <button onclick="JamApp.switchExchange('upbit')" id="extab-upbit" class="flex-1 py-1.5 text-[10px] font-black rounded-md transition-all text-gray-500 hover:text-white uppercase">Upbit</button>
+                            <button onclick="JamApp.switchExchange('binance')" id="extab-binance" class="flex-1 py-1.5 text-[10px] font-black rounded-md transition-all jam-bg text-white uppercase shadow-lg shadow-pink-500/20">Binance</button>
+                        </div>
                     </div>
-                    <!-- Category Switch Tier -->
-                    <div class="flex border-b border-gray-800 bg-[#161b22] p-1" id="category-tabs">
-                        <button onclick="JamApp.switchMarket('CRYPTO')" id="mtab-CRYPTO" class="flex-1 py-2 text-[9px] font-black tab-active transition-all">CRYPTO</button>
-                        <button onclick="JamApp.switchMarket('COMMODITY')" id="mtab-COMMODITY" class="flex-1 py-2 text-[9px] font-black text-gray-500 hover:text-gray-300 transition-all">COMMODITY</button>
-                        <button onclick="JamApp.switchMarket('STOCK')" id="mtab-STOCK" class="flex-1 py-2 text-[9px] font-black text-gray-500 hover:text-gray-300 transition-all">STOCK</button>
+                    <!-- Category Tabs -->
+                    <div id="market-tabs" class="flex border-b border-gray-800 bg-[#0d1117]">
+                        <!-- Dynamic Tabs Here -->
                     </div>
-                    <div class="p-3 border-b border-gray-800">
+                    <!-- Filter Search -->
+                    <div class="p-2 border-b border-gray-800">
                         <input type="text" id="coin-filter" oninput="JamApp.renderMarketList()" placeholder="Quick Search..." class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2 text-[12px] focus:outline-none focus:border-pink-500 transition-colors">
                     </div>
-                    <div id="coin-list" class="flex-grow overflow-y-auto custom-scrollbar p-2"></div>
+                    <!-- Coin List -->
+                    <div id="coin-list" class="flex-grow overflow-y-auto custom-scrollbar p-1.5"></div>
                 </section>
             </div>
 
@@ -160,7 +130,7 @@
                     <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#0d1117]">
                         <div class="flex items-center space-x-3">
                             <div class="w-2 h-4 jam-bg rounded-full"></div>
-                            <h2 id="current-symbol-title" class="font-black text-sm text-white tracking-tight">BINANCE:BTCUSDT</h2>
+                            <h2 id="current-symbol-title" class="font-black text-sm text-white tracking-tight uppercase">BINANCE:BTCUSDT</h2>
                         </div>
                         <span class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">Global Market Terminal</span>
                     </div>
@@ -169,29 +139,30 @@
 
                 <!-- Portfolio Manager -->
                 <section class="bg-[#161b22] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
-                    <div class="p-4 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
+                    <div class="p-3 border-b border-gray-800 bg-[#0d1117] flex justify-between items-center">
                         <div class="flex items-center space-x-2">
                             <div class="flex space-x-1" id="portfolio-tabs">
-                                <button onclick="JamApp.switchSlot(0)" id="pslot-0" class="px-2.5 py-1 rounded-md border border-gray-700 text-[9px] font-black bg-[#1c2128] hover:border-pink-500 transition-all">1</button>
-                                <button onclick="JamApp.switchSlot(1)" id="pslot-1" class="px-2.5 py-1 rounded-md border border-gray-700 text-[9px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">2</button>
-                                <button onclick="JamApp.switchSlot(2)" id="pslot-2" class="px-2.5 py-1 rounded-md border border-gray-700 text-[9px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">3</button>
+                                <button onclick="JamApp.switchSlot(0)" id="pslot-0" class="px-2 py-0.5 rounded-md border border-gray-700 text-[8px] font-black bg-[#1c2128] hover:border-pink-500 transition-all">1</button>
+                                <button onclick="JamApp.switchSlot(1)" id="pslot-1" class="px-2 py-0.5 rounded-md border border-gray-700 text-[8px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">2</button>
+                                <button onclick="JamApp.switchSlot(2)" id="pslot-2" class="px-2 py-0.5 rounded-md border border-gray-700 text-[8px] font-black bg-[#1c2128] opacity-50 hover:opacity-100 transition-all">3</button>
                             </div>
                             <!-- 통합 통화 스위치 -->
-                            <div class="flex bg-[#0d1117] rounded-md p-0.5 border border-gray-800 ml-2">
-                                <button onclick="JamApp.setDisplayCurrency('KRW')" id="cur-krw" class="px-2 py-0.5 text-[8px] font-black rounded transition-all text-gray-500 hover:text-white uppercase">KRW</button>
-                                <button onclick="JamApp.setDisplayCurrency('USD')" id="cur-usd" class="px-2 py-0.5 text-[8px] font-black rounded transition-all jam-bg text-white uppercase">USD</button>
+                            <div class="flex bg-[#0d1117] rounded-md p-0.5 border border-gray-800 ml-1">
+                                <button onclick="JamApp.setDisplayCurrency('KRW')" id="cur-krw" class="px-1.5 py-0.5 text-[7.5px] font-black rounded transition-all text-gray-500 hover:text-white uppercase">KRW</button>
+                                <button onclick="JamApp.setDisplayCurrency('USD')" id="cur-usd" class="px-1.5 py-0.5 text-[7.5px] font-black rounded transition-all jam-bg text-white uppercase">USD</button>
                             </div>
                         </div>
-                        <div class="flex space-x-6 items-center flex-grow justify-end">
+                        <div class="flex space-x-4 items-center flex-grow justify-end">
                             <div class="text-right">
-                                <p class="text-[8px] text-gray-500 uppercase font-bold mb-0.5 flex items-center justify-end gap-1.5">
-                                    Total Value <span id="total-roi" class="text-[9px] font-black">0%</span>
-                                </p>
-                                <p id="total-balance" class="text-xl font-black leading-none transition-all duration-300 whitespace-nowrap">$0</p>
+                                <p class="text-[7.5px] text-gray-500 uppercase font-bold mb-0.5 text-right">Total Value</p>
+                                <div class="flex items-center justify-end gap-2">
+                                    <p id="total-balance" class="text-lg font-black leading-none transition-all duration-300 whitespace-nowrap">$0</p>
+                                    <span id="total-roi" class="text-[8px] font-black px-1.5 py-0.5 rounded whitespace-nowrap">0%</span>
+                                </div>
                             </div>
-                            <div class="text-right border-l border-gray-800 pl-6">
-                                <p class="text-[8px] text-gray-500 uppercase font-bold mb-0.5">Net Profit</p>
-                                <p id="total-profit-amt" class="text-xl font-black leading-none transition-all duration-300 whitespace-nowrap">$0</p>
+                            <div class="text-right border-l border-gray-800 pl-4">
+                                <p class="text-[7.5px] text-gray-500 uppercase font-bold mb-0.5">Net Profit</p>
+                                <p id="total-profit-amt" class="text-lg font-black leading-none transition-all duration-300 whitespace-nowrap">$0</p>
                             </div>
                         </div>
                     </div>
@@ -202,8 +173,8 @@
                             <div class="flex justify-between items-center mb-1">
                                 <p class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Add Asset</p>
                                 <div class="flex bg-[#0d1117] rounded-md p-0.5 border border-gray-800">
-                                    <button onclick="JamApp.setExchange('upbit')" id="ex-upbit-form" class="px-2 py-0.5 text-[8px] font-black rounded transition-all text-gray-500 hover:text-white">UPBIT</button>
-                                    <button onclick="JamApp.setExchange('binance')" id="ex-binance-form" class="px-2 py-0.5 text-[8px] font-black rounded transition-all jam-bg text-white">BINANCE</button>
+                                    <button onclick="JamApp.setExchange('upbit')" id="ex-upbit" class="px-2 py-0.5 text-[8px] font-black rounded transition-all text-gray-500 hover:text-white uppercase">UPBIT</button>
+                                    <button onclick="JamApp.setExchange('binance')" id="ex-binance" class="px-2 py-0.5 text-[8px] font-black rounded transition-all jam-bg text-white uppercase">BINANCE</button>
                                 </div>
                             </div>
                             <select id="p-coin-select" class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-pink-500"></select>
@@ -222,7 +193,7 @@
                         </div>
                         <!-- Asset List -->
                         <div class="md:col-span-3">
-                            <div id="portfolio-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto max-h-[280px] custom-scrollbar pr-2"></div>
+                            <div id="portfolio-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto max-h-[300px] custom-scrollbar pr-2"></div>
                             <div id="empty-msg" class="text-center py-16 text-gray-600 text-xs font-bold italic uppercase tracking-widest">No Active Positions In This Slot</div>
                         </div>
                     </div>
@@ -335,34 +306,38 @@
          * JAM APP - Core Application Object (v2.0 Phase 2)
          */
         const JamApp = {
+            // 업비트 상장 여부 추가
             cryptoList: [
-                { symbol: "BINANCE:BTCUSDT", name: "Bitcoin", sub: "BTC", id: "bitcoin", category: "CRYPTO" },
-                { symbol: "BINANCE:ETHUSDT", name: "Ethereum", sub: "ETH", id: "ethereum", category: "CRYPTO" },
-                { symbol: "BINANCE:SOLUSDT", name: "Solana", sub: "SOL", id: "solana", category: "CRYPTO" },
-                { symbol: "BINANCE:BNBUSDT", name: "BNB", sub: "BNB", id: "binancecoin", category: "CRYPTO" },
-                { symbol: "BINANCE:XRPUSDT", name: "XRP", sub: "XRP", id: "ripple", category: "CRYPTO" },
-                { symbol: "BINANCE:ADAUSDT", name: "Cardano", sub: "ADA", id: "cardano", category: "CRYPTO" },
-                { symbol: "BINANCE:LINKUSDT", name: "Chainlink", sub: "LINK", id: "chainlink", category: "CRYPTO" },
-                { symbol: "BINANCE:UNIUSDT", name: "Uniswap", sub: "UNI", id: "uniswap", category: "CRYPTO" },
-                { symbol: "BINANCE:AAVEUSDT", name: "Aave", sub: "AAVE", id: "aave", category: "CRYPTO" },
-                { symbol: "BINANCE:DOGEUSDT", name: "Dogecoin", sub: "DOGE", id: "dogecoin", category: "CRYPTO" },
-                { symbol: "BINANCE:SHIBUSDT", name: "Shiba Inu", sub: "SHIB", id: "shiba-inu", category: "CRYPTO" },
-                { symbol: "BINANCE:PEPEUSDT", name: "Pepe", sub: "PEPE", id: "pepe", category: "CRYPTO" },
-                { symbol: "BINANCE:FLOKIUSDT", name: "Floki", sub: "FLOKI", id: "floki", category: "CRYPTO" }
+                { symbol: "BINANCE:BTCUSDT", name: "Bitcoin", sub: "BTC", id: "bitcoin", category: "CRYPTO", upbit: true },
+                { symbol: "BINANCE:ETHUSDT", name: "Ethereum", sub: "ETH", id: "ethereum", category: "CRYPTO", upbit: true },
+                { symbol: "BINANCE:SOLUSDT", name: "Solana", sub: "SOL", id: "solana", category: "CRYPTO", upbit: true },
+                { symbol: "BINANCE:BNBUSDT", name: "BNB", sub: "BNB", id: "binancecoin", category: "CRYPTO", upbit: false },
+                { symbol: "BINANCE:XRPUSDT", name: "XRP", sub: "XRP", id: "ripple", category: "CRYPTO", upbit: true },
+                { symbol: "BINANCE:ADAUSDT", name: "Cardano", sub: "ADA", id: "cardano", category: "CRYPTO", upbit: true },
+                { symbol: "BINANCE:LINKUSDT", name: "Chainlink", sub: "LINK", id: "chainlink", category: "CRYPTO", upbit: true },
+                { symbol: "BINANCE:UNIUSDT", name: "Uniswap", sub: "UNI", id: "uniswap", category: "CRYPTO", upbit: false },
+                { symbol: "BINANCE:AAVEUSDT", name: "Aave", sub: "AAVE", id: "aave", category: "CRYPTO", upbit: true },
+                { symbol: "BINANCE:DOGEUSDT", name: "Dogecoin", sub: "DOGE", id: "dogecoin", category: "CRYPTO", upbit: true },
+                { symbol: "BINANCE:SHIBUSDT", name: "Shiba Inu", sub: "SHIB", id: "shiba-inu", category: "CRYPTO", upbit: true },
+                { symbol: "BINANCE:PEPEUSDT", name: "Pepe", sub: "PEPE", id: "pepe", category: "CRYPTO", upbit: false },
+                { symbol: "BINANCE:FLOKIUSDT", name: "Floki", sub: "FLOKI", id: "floki", category: "CRYPTO", upbit: false },
+                { symbol: "BINANCE:XAUUSDT", name: "Gold", sub: "XAU", id: "gold", category: "COMMODITY", upbit: false },
+                { symbol: "BINANCE:TSLAUSDT", name: "Tesla", sub: "TSLA", id: "tesla", category: "STOCK", upbit: false }
             ],
 
             state: {
                 market: { 
-                    exchange: 'binance', // 'upbit' or 'binance'
-                    current: "CRYPTO",   // category
-                    activeSymbol: "BINANCE:BTCUSDT" 
+                    current: "CRYPTO", 
+                    activeSymbol: "BINANCE:BTCUSDT",
+                    activeExchange: "binance" // upbit | binance
                 },
                 portfolio: {
                     slots: JSON.parse(localStorage.getItem('jam_data_v2')) || [[], [], []],
                     realtimePrices: { upbit: {}, binance: {} },
                     prevPrices: { upbit: {}, binance: {} },
                     editingIndex: null,
-                    inputExchange: 'binance'
+                    inputExchange: 'binance',
+                    currentSlot: 0
                 },
                 hubLinks: JSON.parse(localStorage.getItem('jam_hub_links')) || [],
                 system: { fixedRate: 1400, displayCurrency: 'USD' }
@@ -372,10 +347,12 @@
             ws: {
                 binance: null,
                 upbit: null,
+                futures: null,
 
                 init() {
                     this.initBinance();
                     this.initUpbit();
+                    this.initFutures();
                 },
 
                 initBinance() {
@@ -386,7 +363,7 @@
                         let updated = false;
                         data.forEach(t => {
                             const sub = t.s.replace('USDT', '');
-                            const coin = JamApp.cryptoList.find(c => c.sub === sub);
+                            const coin = JamApp.cryptoList.find(c => c.sub === sub && c.category === 'CRYPTO');
                             if (coin) {
                                 const price = parseFloat(t.c);
                                 JamApp.state.portfolio.prevPrices.binance[coin.id] = JamApp.state.portfolio.realtimePrices.binance[coin.id];
@@ -399,11 +376,31 @@
                     this.binance.onclose = () => { this.binance = null; setTimeout(() => this.initBinance(), 3000); };
                 },
 
+                initFutures() {
+                    if (this.futures) return;
+                    this.futures = new WebSocket("wss://fstream.binance.com/ws/!miniTicker@arr");
+                    this.futures.onmessage = (msg) => {
+                        const data = JSON.parse(msg.data);
+                        let updated = false;
+                        data.forEach(t => {
+                            const coin = JamApp.cryptoList.find(c => c.symbol === `BINANCE:${t.s}`);
+                            if (coin && (coin.category === 'COMMODITY' || coin.category === 'STOCK')) {
+                                const price = parseFloat(t.c);
+                                JamApp.state.portfolio.prevPrices.binance[coin.id] = JamApp.state.portfolio.realtimePrices.binance[coin.id];
+                                JamApp.state.portfolio.realtimePrices.binance[coin.id] = price;
+                                updated = true;
+                            }
+                        });
+                        if (updated) JamApp.updateRealtimeUI();
+                    };
+                    this.futures.onclose = () => { this.futures = null; setTimeout(() => this.initFutures(), 3000); };
+                },
+
                 initUpbit() {
                     if (this.upbit) return;
                     this.upbit = new WebSocket("wss://api.upbit.com/websocket/v1");
                     this.upbit.onopen = () => {
-                        const codes = JamApp.cryptoList.map(c => `KRW-${c.sub}`);
+                        const codes = JamApp.cryptoList.filter(c => c.upbit).map(c => `KRW-${c.sub}`);
                         this.upbit.send(JSON.stringify([{ ticket: "JAM-ENGINE" }, { type: "ticker", codes }]));
                     };
                     this.upbit.onmessage = async (msg) => {
@@ -423,7 +420,6 @@
 
             // [Exchange Rate Bridge]
             async syncExchangeRate() {
-                // Fixed rate system: No longer sync with API, but keeping structure for potential future use
                 console.log(`💎 FIXED_EXCHANGE_RATE: 1 USD = ${this.state.system.fixedRate} KRW`);
             },
 
@@ -438,10 +434,9 @@
                 let totalValKRW = 0, totalCostKRW = 0;
 
                 slotData.forEach((asset, idx) => {
-                    const isUpbit = asset.exchange === 'upbit';
-                    const curPrice = isUpbit ? this.state.portfolio.realtimePrices.upbit[asset.id] : this.state.portfolio.realtimePrices.binance[asset.id];
-                    const prevPrice = isUpbit ? this.state.portfolio.prevPrices.upbit[asset.id] : this.state.portfolio.prevPrices.binance[asset.id];
-                    const symbol = isUpbit ? '₩' : '$';
+                    const isUpbitAsset = asset.exchange === 'upbit';
+                    const curPrice = isUpbitAsset ? this.state.portfolio.realtimePrices.upbit[asset.id] : this.state.portfolio.realtimePrices.binance[asset.id];
+                    const symbol = isUpbitAsset ? '₩' : '$';
 
                     if (curPrice) {
                         const val = curPrice * asset.quantity;
@@ -449,39 +444,31 @@
                         const profit = val - cost;
                         const profitPct = cost > 0 ? (profit / cost) * 100 : 0;
                         const profitClass = profit >= 0 ? 'profit-glow' : 'loss-glow';
-                        const badgeClass = profit >= 0 ? 'roi-up' : 'roi-down';
 
-                        // Calculate totals for summary (Unified logic)
-                        if (isUpbit) {
-                            totalValKRW += val;
-                            totalCostKRW += cost;
-                            totalValUSD += val / fixedRate;
-                            totalCostUSD += cost / fixedRate;
+                        if (isUpbitAsset) {
+                            totalValKRW += val; totalCostKRW += cost;
+                            totalValUSD += val / fixedRate; totalCostUSD += cost / fixedRate;
                         } else {
-                            totalValUSD += val;
-                            totalCostUSD += cost;
-                            totalValKRW += val * fixedRate;
-                            totalCostKRW += cost * fixedRate;
+                            totalValUSD += val; totalCostUSD += cost;
+                            totalValKRW += val * fixedRate; totalCostKRW += cost * fixedRate;
                         }
 
-                        // DOM Injection for individual cards
                         const valEl = document.getElementById(`val-val-${idx}`);
                         const profitEl = document.getElementById(`profit-val-${idx}`);
-                        const badgeEl = document.getElementById(`pct-badge-${idx}`);
+                        const pctEl = document.getElementById(`pct-val-${idx}`);
 
-                        if (valEl) valEl.innerText = `${symbol}${this.utils.fmt(val)}`;
+                        if (valEl) valEl.innerText = `${symbol}${this.utils.fmt(val, isUpbitAsset ? 'krw' : 'cur')}`;
                         if (profitEl) {
-                            profitEl.innerText = `${profit >= 0 ? '+' : '-'}${symbol}${this.utils.fmt(Math.abs(profit))}`;
-                            profitEl.className = `text-[11px] font-black ${profitClass}`;
+                            profitEl.innerText = `${profit >= 0 ? '+' : '-'}${symbol}${this.utils.fmt(Math.abs(profit), isUpbitAsset ? 'krw' : 'cur')}`;
+                            profitEl.className = `text-[9px] font-bold ${profitClass}`;
                         }
-                        if (badgeEl) {
-                            badgeEl.innerText = `${profit >= 0 ? '+' : ''}${this.utils.fmt(profitPct, 'pct')}%`;
-                            badgeEl.className = `roi-badge ${badgeClass}`;
+                        if (pctEl) {
+                            pctEl.innerText = `${profit >= 0 ? '+' : ''}${this.utils.fmt(profitPct, 'pct')}%`;
+                            pctEl.className = `text-[12px] font-black ${profitClass}`;
                         }
                     }
                 });
 
-                // Update Unified Summary
                 const finalVal = isDisplayKRW ? totalValKRW : totalValUSD;
                 const finalCost = isDisplayKRW ? totalCostKRW : totalCostUSD;
                 const finalProfit = finalVal - finalCost;
@@ -489,57 +476,54 @@
                 const totalROI = finalCost > 0 ? (finalProfit / finalCost) * 100 : 0;
                 const totalProfitClass = finalProfit >= 0 ? 'profit-glow' : 'loss-glow';
 
-                document.getElementById('total-balance').innerText = `${finalSymbol}${this.utils.fmt(finalVal)}`;
-                
+                document.getElementById('total-balance').innerText = `${finalSymbol}${this.utils.fmt(finalVal, isDisplayKRW ? 'krw' : 'cur')}`;
                 const roiEl = document.getElementById('total-roi');
                 if (roiEl) {
                     roiEl.innerText = `${totalROI >= 0 ? '+' : ''}${this.utils.fmt(totalROI, 'pct')}%`;
-                    roiEl.className = `text-[10px] font-black ${totalProfitClass}`;
+                    const bgClass = totalROI >= 0 ? 'bg-blue-500/10' : 'bg-red-500/10';
+                    roiEl.className = `text-[12px] font-black px-1.5 py-0.5 rounded ${bgClass} ${totalProfitClass}`;
                 }
-
                 const profitAmtEl = document.getElementById('total-profit-amt');
                 if (profitAmtEl) {
-                    profitAmtEl.innerText = `${finalProfit >= 0 ? '+' : '-'}${finalSymbol}${this.utils.fmt(Math.abs(finalProfit))}`;
-                    profitAmtEl.className = `text-xl font-black ${totalProfitClass}`;
+                    profitAmtEl.innerText = `${finalProfit >= 0 ? '+' : '-'}${finalSymbol}${this.utils.fmt(Math.abs(finalProfit), isDisplayKRW ? 'krw' : 'cur')}`;
+                    profitAmtEl.className = `text-lg font-black ${totalProfitClass}`;
                 }
             },
 
             setDisplayCurrency(curr) {
                 this.state.system.displayCurrency = curr;
-                document.getElementById('cur-krw').className = `px-3 py-1 text-[9px] font-black rounded transition-all ${curr === 'KRW' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
-                document.getElementById('cur-usd').className = `px-3 py-1 text-[9px] font-black rounded transition-all ${curr === 'USD' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
+                document.getElementById('cur-krw').className = `px-1.5 py-0.5 text-[7.5px] font-black rounded transition-all ${curr === 'KRW' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
+                document.getElementById('cur-usd').className = `px-1.5 py-0.5 text-[7.5px] font-black rounded transition-all ${curr === 'USD' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
                 this.updateRealtimeUI();
             },
 
-            // [Market Logic]
             changeChartSymbol(symbol) {
                 if (!symbol) return;
-                this.state.market.activeSymbol = symbol;
-                document.getElementById('current-symbol-title').innerText = symbol;
                 
+                let targetSymbol = symbol;
+                
+                // Binance 선물(USD-M) 종목은 .P 접미사 필수 (XAU, TSLA, BZ 등 TradFi 라우팅)
+                if (symbol.startsWith('BINANCE:') && (symbol.includes('XAU') || symbol.includes('TSLA') || symbol.includes('BZ'))) {
+                    if (!targetSymbol.endsWith('.P')) targetSymbol += '.P';
+                    console.log(`%c[Chart Debug] Requesting Symbol with Suffix: ${targetSymbol}`, "color: #FF007A; font-weight: bold;");
+                }
+
+                this.state.market.activeSymbol = targetSymbol;
+                const titleEl = document.getElementById('current-symbol-title');
+                if (titleEl) titleEl.innerText = targetSymbol;
+
                 new TradingView.widget({
-                    "autosize": true,
-                    "symbol": symbol,
-                    "interval": "D",
-                    "timezone": "Asia/Seoul",
-                    "theme": "dark",
-                    "style": "1",
-                    "locale": "ko",
-                    "toolbar_bg": "#0d1117",
-                    "enable_publishing": false,
-                    "hide_side_toolbar": false,
-                    "container_id": "tv_chart_container"
+                    "autosize": true, "symbol": targetSymbol, "interval": "D", "timezone": "Asia/Seoul",
+                    "theme": "dark", "style": "1", "locale": "ko", "toolbar_bg": "#0d1117",
+                    "enable_publishing": false, "hide_side_toolbar": false, "container_id": "tv_chart_container"
                 });
             },
 
-            // [Optimized Renderer]
             renderPortfolio() {
                 const container = document.getElementById('portfolio-list');
                 const emptyMsg = document.getElementById('empty-msg');
                 const slotIdx = this.state.portfolio.currentSlot || 0;
                 const slotData = this.state.portfolio.slots[slotIdx];
-                const displayCurrency = this.state.system.displayCurrency;
-                const symbol = displayCurrency === 'KRW' ? '₩' : '$';
                 
                 container.innerHTML = '';
                 if (slotData.length === 0) {
@@ -547,74 +531,65 @@
                 } else {
                     emptyMsg.classList.add('hidden');
                     slotData.forEach((asset, idx) => {
-                        const isUpbit = asset.exchange === 'upbit';
+                        const isUpbitAsset = asset.exchange === 'upbit';
                         const isEditing = this.state.portfolio.editingIndex === idx;
                         const card = document.createElement('div');
+                        card.className = `bg-[#0d1117] border border-gray-800 p-3 rounded-xl flex flex-col transition-all cursor-pointer hover:border-gray-600 relative group`;
                         
-                        const chartSymbol = isUpbit ? `UPBIT:${asset.sub}KRW` : `BINANCE:${asset.sub}USDT`;
+                        const chartSymbol = isUpbitAsset ? `UPBIT:${asset.sub}KRW` : `BINANCE:${asset.sub}USDT`;
+                        const symbol = isUpbitAsset ? '₩' : '$';
 
                         if (!isEditing) {
                             card.onclick = () => this.changeChartSymbol(chartSymbol);
-                            card.className = "asset-card rounded-xl flex flex-col transition-all cursor-pointer mb-2 relative group";
                             card.innerHTML = `
-                                <!-- Top Area: Title & Profit -->
-                                <div class="flex justify-between items-center mb-2">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-[14px] font-black text-white tracking-tighter">${asset.sub}</span>
-                                        <span class="text-[8px] text-gray-500 font-bold uppercase tracking-widest">${asset.exchange}</span>
+                                <div class="flex justify-between items-center mb-1.5 border-b border-gray-800/30 pb-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[12px] font-black text-white uppercase tracking-tighter">${asset.sub}</span>
+                                        <span class="text-[7px] px-1 py-0.2 rounded bg-gray-800 text-gray-500 font-bold border border-gray-700">${asset.exchange.toUpperCase()}</span>
                                     </div>
-                                    <div class="flex items-center space-x-2">
-                                        <span id="profit-val-${idx}" class="text-[11px] font-black">---</span>
-                                        <div id="pct-badge-${idx}" class="roi-badge">---</div>
-                                        <div class="flex items-center ml-1">
-                                            <button onclick="event.stopPropagation(); JamApp.startEdit(${idx})" class="p-1 text-gray-600 hover:text-pink-500 transition-colors">
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                            </button>
-                                            <button onclick="event.stopPropagation(); JamApp.removeAsset(${idx})" class="p-1 text-gray-600 hover:text-red-500 transition-colors">
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                            </button>
+                                    <div class="text-right flex items-center gap-2">
+                                        <div id="pct-val-${idx}" class="text-[12px] font-black">---</div>
+                                        <div id="profit-val-${idx}" class="text-[9px] font-bold">---</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-x-2">
+                                    <div class="flex flex-col space-y-0.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[8px] text-gray-500 font-bold uppercase">보유</span>
+                                            <span class="text-[10px] font-bold text-gray-200">${this.utils.fmt(asset.quantity, 'num')}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[8px] text-gray-500 font-bold uppercase">평가</span>
+                                            <span id="val-val-${idx}" class="text-[10px] font-bold text-gray-200">---</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col space-y-0.5 border-l border-gray-800/30 pl-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[8px] text-gray-500 font-bold uppercase">평단</span>
+                                            <span class="text-[10px] font-medium text-gray-400">${symbol}${this.utils.fmt(asset.buyPrice, isUpbitAsset ? 'krw' : 'cur')}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[8px] text-gray-500 font-bold uppercase">매수</span>
+                                            <span class="text-[10px] font-medium text-gray-400">${symbol}${this.utils.fmt(asset.buyPrice * asset.quantity, isUpbitAsset ? 'krw' : 'cur')}</span>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Bottom Area: 2x2 Grid -->
-                                <div class="grid grid-cols-2 gap-y-2 gap-x-4 pt-2 border-t border-white/[0.05]">
-                                    <div class="flex flex-col items-end">
-                                        <span class="text-[12px] font-medium text-gray-200">${this.utils.fmt(asset.quantity, 'num')}</span>
-                                        <span class="text-[10px] text-[#888] font-bold uppercase leading-tight">Holdings</span>
-                                    </div>
-                                    <div class="flex flex-col items-end">
-                                        <span id="val-val-${idx}" class="text-[12px] font-medium text-gray-200">---</span>
-                                        <span class="text-[10px] text-[#888] font-bold uppercase leading-tight">Total Value</span>
-                                    </div>
-                                    <div class="flex flex-col items-end">
-                                        <span class="text-[12px] font-medium text-gray-200">${symbol}${this.utils.fmt(asset.buyPrice, 'num')}</span>
-                                        <span class="text-[10px] text-[#888] font-bold uppercase leading-tight">Avg. Price</span>
-                                    </div>
-                                    <div class="flex flex-col items-end">
-                                        <span class="text-[12px] font-medium text-gray-200">${symbol}${this.utils.fmt(asset.buyPrice * asset.quantity)}</span>
-                                        <span class="text-[10px] text-[#888] font-bold uppercase leading-tight">Invested</span>
-                                    </div>
+                                <div class="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onclick="event.stopPropagation(); JamApp.startEdit(${idx})" class="p-0.5 text-[7px] bg-gray-800 text-gray-500 hover:text-pink-500 rounded border border-gray-700">EDIT</button>
+                                    <button onclick="event.stopPropagation(); JamApp.removeAsset(${idx})" class="p-0.5 text-[7px] bg-gray-800 text-gray-500 hover:text-red-500 rounded border border-gray-700">✕</button>
                                 </div>`;
                         } else {
-                            card.className = "asset-card rounded-xl border-pink-500/30 flex flex-col mb-2";
                             card.innerHTML = `
                                 <div class="flex justify-between items-start mb-2">
-                                    <span class="text-[10px] font-black text-pink-500 uppercase tracking-widest italic">Edit: ${asset.sub}</span>
-                                    <div class="flex space-x-3">
-                                        <button onclick="event.stopPropagation(); JamApp.saveEdit(${idx})" class="text-[10px] text-green-500 font-black hover:text-green-400 uppercase">SAVE</button>
-                                        <button onclick="event.stopPropagation(); JamApp.cancelEdit()" class="text-[10px] text-gray-500 font-black hover:text-gray-400 uppercase">ESC</button>
+                                    <span class="text-[10px] font-black text-pink-500 uppercase tracking-widest">Adjust ${asset.sub}</span>
+                                    <div class="flex space-x-2">
+                                        <button onclick="event.stopPropagation(); JamApp.saveEdit(${idx})" class="text-[8px] text-green-500 font-black">SAVE</button>
+                                        <button onclick="event.stopPropagation(); JamApp.cancelEdit()" class="text-[8px] text-gray-500 font-black">ESC</button>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
-                                    <div class="flex flex-col">
-                                        <label class="text-[8px] text-gray-500 font-black uppercase mb-1 tracking-widest">Price</label>
-                                        <input type="text" id="edit-price-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.buyPrice, 'num')}" class="w-full bg-[#0d1117] border border-gray-700 rounded px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500 font-bold">
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <label class="text-[8px] text-gray-500 font-black uppercase mb-1 tracking-widest">Qty</label>
-                                        <input type="text" id="edit-qty-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.quantity, 'num')}" class="w-full bg-[#0d1117] border border-gray-700 rounded px-2 py-1.5 text-[11px] text-white focus:outline-none focus:border-pink-500 font-bold">
-                                    </div>
+                                    <input type="text" id="edit-price-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.buyPrice, 'num')}" class="w-full bg-[#1c2128] border border-gray-700 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500">
+                                    <input type="text" id="edit-qty-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.quantity, 'num')}" class="w-full bg-[#1c2128] border border-gray-700 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500">
                                 </div>`;
                         }
                         container.appendChild(card);
@@ -624,9 +599,37 @@
                 this.updateSlotUI();
             },
 
+            updateSlotUI() {
+                [0,1,2].forEach(i => {
+                    const btn = document.getElementById(`pslot-${i}`);
+                    if (btn) btn.className = `px-2 py-0.5 rounded-md border text-[8px] font-black bg-[#1c2128] transition-all ${i === (this.state.portfolio.currentSlot || 0) ? 'border-pink-500' : 'border-gray-700 opacity-50'}`;
+                });
+            },
+
             utils: {
                 fmt(val, type = 'cur') {
                     if (val === undefined || val === null || isNaN(val)) return '0';
+                    
+                    // 정밀 가격 포맷팅 로직
+                    if (type === 'cur' || type === 'krw') {
+                        const isKRW = type === 'krw';
+                        const threshold = isKRW ? 1000 : 1;
+                        
+                        if (val < threshold) {
+                            // 1 미만 (또는 1000원 미만): 소수점 4~6자리 유연 표시
+                            return Number(val).toLocaleString(undefined, { 
+                                minimumFractionDigits: 4, 
+                                maximumFractionDigits: 6 
+                            });
+                        } else {
+                            // 1 이상 (또는 1000원 이상): 천 단위 쉼표 + 소수점 2자리
+                            return Number(val).toLocaleString(undefined, { 
+                                minimumFractionDigits: 2, 
+                                maximumFractionDigits: 2 
+                            });
+                        }
+                    }
+
                     let options = { minimumFractionDigits: 0, maximumFractionDigits: 2 };
                     if (type === 'pct') options = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
                     else if (type === 'num') options = { maximumFractionDigits: 8 };
@@ -646,6 +649,7 @@
                 this.syncExchangeRate();
                 setInterval(() => this.syncExchangeRate(), 60000);
                 this.ws.init();
+                this.renderTabs();
                 this.renderMarketList();
                 this.populateCoinSelect();
                 this.renderPortfolio();
@@ -654,13 +658,78 @@
                 console.log("💎 JAM Engine v2.0 Live");
             },
 
-            // [Existing Actions]
+            switchExchange(ex) {
+                this.state.market.activeExchange = ex;
+                this.state.market.current = "CRYPTO"; // 전환 시 카테고리 초기화
+                
+                // UI 버튼 업데이트
+                document.getElementById('extab-upbit').className = `flex-1 py-1.5 text-[10px] font-black rounded-md transition-all uppercase ${ex === 'upbit' ? 'jam-bg text-white shadow-lg shadow-pink-500/20' : 'text-gray-500 hover:text-white'}`;
+                document.getElementById('extab-binance').className = `flex-1 py-1.5 text-[10px] font-black rounded-md transition-all uppercase ${ex === 'binance' ? 'jam-bg text-white shadow-lg shadow-pink-500/20' : 'text-gray-500 hover:text-white'}`;
+                
+                this.renderTabs();
+                this.renderMarketList();
+            },
+
+            renderTabs() {
+                const container = document.getElementById('market-tabs');
+                container.innerHTML = '';
+                
+                const ex = this.state.market.activeExchange;
+                const tabs = ex === 'upbit' ? ['CRYPTO'] : ['CRYPTO', 'COMMODITY', 'STOCK'];
+                
+                tabs.forEach(tab => {
+                    const btn = document.createElement('button');
+                    btn.innerText = tab;
+                    btn.className = `flex-1 py-2.5 text-[11px] font-black transition-all ${this.state.market.current === tab ? 'tab-active' : 'text-gray-500 hover:text-gray-300'}`;
+                    btn.onclick = () => this.switchMarket(tab);
+                    container.appendChild(btn);
+                });
+            },
+
+            switchMarket(tabId) { 
+                this.state.market.current = tabId;
+                this.renderTabs();
+                this.renderMarketList();
+            },
+
+            renderMarketList() {
+                const container = document.getElementById('coin-list');
+                const filter = document.getElementById('coin-filter')?.value.toLowerCase() || '';
+                const ex = this.state.market.activeExchange;
+                
+                container.innerHTML = '';
+                
+                this.cryptoList
+                    .filter(c => c.category === this.state.market.current)
+                    .filter(c => ex === 'upbit' ? c.upbit : true) // 업비트 모드 시 필터링
+                    .filter(c => c.sub.toLowerCase().includes(filter) || c.name.toLowerCase().includes(filter))
+                    .forEach(coin => {
+                        const price = ex === 'upbit' ? this.state.portfolio.realtimePrices.upbit[coin.id] : this.state.portfolio.realtimePrices.binance[coin.id];
+                        const symbol = ex === 'upbit' ? '₩' : '$';
+                        
+                        const div = document.createElement('div');
+                        div.className = `flex items-center justify-between py-1.5 px-2.5 rounded-xl cursor-pointer hover:bg-[#1c2128] mb-1 transition-all`;
+                        
+                        const chartSymbol = ex === 'upbit' ? `UPBIT:${coin.sub}KRW` : coin.symbol;
+                        div.onclick = () => this.changeChartSymbol(chartSymbol);
+                        
+                        div.innerHTML = `
+                            <div class="flex items-center space-x-2.5">
+                                <img src="https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png" class="w-6 h-6 rounded-full border border-gray-800 bg-gray-900 p-0.5" onerror="this.src='https://via.placeholder.com/28'">
+                                <span class="text-[11px] font-black ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-gray-200'}">${coin.sub}</span>
+                            </div>
+                            <div class="text-right text-[11px] font-black text-white">${price > 0 ? symbol + this.utils.fmt(price, ex === 'upbit' ? 'krw' : 'cur') : '---'}</div>`;
+                        container.appendChild(div);
+                    });
+            },
+
             setExchange(ex) {
                 this.state.portfolio.inputExchange = ex;
-                document.getElementById('ex-upbit-form').className = `px-2 py-0.5 text-[8px] font-black rounded transition-all ${ex==='upbit' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'}`;
-                document.getElementById('ex-binance-form').className = `px-2 py-0.5 text-[8px] font-black rounded transition-all ${ex==='binance' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'}`;
+                document.getElementById('ex-upbit').className = `px-2 py-0.5 text-[8px] font-black rounded transition-all ${ex==='upbit' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
+                document.getElementById('ex-binance').className = `px-2 py-0.5 text-[8px] font-black rounded transition-all ${ex==='binance' ? 'jam-bg text-white' : 'text-gray-500 hover:text-white'} uppercase`;
                 document.getElementById('unit-price').innerText = ex === 'upbit' ? '₩' : '$';
             },
+
             addAsset() {
                 const coinData = document.getElementById('p-coin-select').value;
                 const price = this.utils.unformat(document.getElementById('p-buy-price').value);
@@ -674,12 +743,14 @@
                 document.getElementById('p-buy-price').value = '';
                 document.getElementById('p-quantity').value = '';
             },
+
             startEdit(idx) { 
                 const asset = this.state.portfolio.slots[this.state.portfolio.currentSlot || 0][idx];
                 this.setExchange(asset.exchange || 'binance');
                 this.state.portfolio.editingIndex = idx; 
                 this.renderPortfolio(); 
             },
+
             saveEdit(idx) {
                 const p = this.utils.unformat(document.getElementById(`edit-price-${idx}`).value);
                 const q = this.utils.unformat(document.getElementById(`edit-qty-${idx}`).value);
@@ -688,94 +759,11 @@
                 this.state.portfolio.editingIndex = null;
                 this.save();
             },
+
             removeAsset(idx) { if (confirm("Remove?")) { this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].splice(idx, 1); this.save(); } },
             save() { localStorage.setItem('jam_data_v2', JSON.stringify(this.state.portfolio.slots)); this.renderPortfolio(); },
             switchSlot(idx) { this.state.portfolio.currentSlot = idx; this.renderPortfolio(); },
             
-            updateSlotUI() {
-                [0,1,2].forEach(i => {
-                    const btn = document.getElementById(`pslot-${i}`);
-                    if (btn) btn.className = `px-2.5 py-1 rounded-md border text-[9px] font-black bg-[#1c2128] transition-all ${i === (this.state.portfolio.currentSlot || 0) ? 'border-pink-500' : 'border-gray-700 opacity-50'}`;
-                });
-            },
-
-            switchExchangeMode(mode) {
-                this.state.market.exchange = mode;
-                
-                // UI Toggle
-                const upbitBtn = document.getElementById('ex-tab-upbit');
-                const binanceBtn = document.getElementById('ex-tab-binance');
-                
-                if (mode === 'upbit') {
-                    upbitBtn.classList.add('active-blue');
-                    upbitBtn.classList.remove('text-gray-500');
-                    binanceBtn.classList.remove('active-blue');
-                    binanceBtn.classList.add('text-gray-500');
-                    
-                    // Hide other categories in UPBIT mode
-                    this.switchMarket('CRYPTO');
-                    document.getElementById('mtab-COMMODITY').style.display = 'none';
-                    document.getElementById('mtab-STOCK').style.display = 'none';
-                } else {
-                    binanceBtn.classList.add('active-blue');
-                    binanceBtn.classList.remove('text-gray-500');
-                    upbitBtn.classList.remove('active-blue');
-                    upbitBtn.classList.add('text-gray-500');
-                    
-                    document.getElementById('mtab-COMMODITY').style.display = 'block';
-                    document.getElementById('mtab-STOCK').style.display = 'block';
-                }
-                this.renderMarketList();
-            },
-
-            renderMarketList() {
-                const container = document.getElementById('coin-list');
-                container.innerHTML = '';
-                
-                // Branching framework based on exchangeMode
-                if (this.state.market.exchange === 'upbit') {
-                    // Upbit Logic Frame
-                    this.cryptoList.filter(c => c.category === this.state.market.current).forEach(coin => {
-                        const price = this.state.portfolio.realtimePrices.upbit[coin.id] || 0;
-                        this.appendMarketItem(container, coin, price, '₩');
-                    });
-                } else {
-                    // Binance Logic Frame
-                    this.cryptoList.filter(c => c.category === this.state.market.current).forEach(coin => {
-                        const price = this.state.portfolio.realtimePrices.binance[coin.id] || 0;
-                        this.appendMarketItem(container, coin, price, '$');
-                    });
-                }
-            },
-
-            appendMarketItem(container, coin, price, symbol) {
-                const div = document.createElement('div');
-                div.className = `flex items-center justify-between py-1.5 px-3 rounded-xl cursor-pointer hover:bg-[#1c2128] mb-1 transition-all`;
-                div.onclick = () => { 
-                    const finalSymbol = this.state.market.exchange === 'upbit' ? `UPBIT:${coin.sub}KRW` : coin.symbol;
-                    this.changeChartSymbol(finalSymbol); 
-                    this.renderMarketList(); 
-                };
-                div.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <img src="https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png" class="w-6 h-6 rounded-full border border-gray-800 bg-gray-900 p-0.5 flex items-center justify-center overflow-hidden" onerror="this.src='https://via.placeholder.com/28'">
-                        <span class="text-[12px] font-black ${this.state.market.activeSymbol.includes(coin.sub) ? 'text-pink-500' : 'text-gray-200'}">${coin.sub}</span>
-                    </div>
-                    <div class="text-right text-[11px] font-black text-white">${price > 0 ? symbol + this.utils.fmt(price) : '---'}</div>`;
-                container.appendChild(div);
-            },
-
-            switchMarket(tabId) { 
-                if (document.getElementById(`mtab-${this.state.market.current}`)) {
-                    document.getElementById(`mtab-${this.state.market.current}`).classList.remove('tab-active');
-                }
-                this.state.market.current = tabId;
-                if (document.getElementById(`mtab-${tabId}`)) {
-                    document.getElementById(`mtab-${tabId}`).classList.add('tab-active');
-                }
-                this.renderMarketList();
-            },
-
             populateCoinSelect() {
                 const s = document.getElementById('p-coin-select');
                 s.innerHTML = '<option value="" disabled selected>Select Coin</option>';
