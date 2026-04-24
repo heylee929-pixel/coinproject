@@ -55,8 +55,9 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            font-weight: 800;
+            font-weight: 700;
             font-size: 11px;
+            color: #ffffff;
             display: flex;
             align-items: baseline;
             gap: 4px;
@@ -773,6 +774,8 @@
                 } else {
                     emptyMsg.classList.add('hidden');
                     slotData.forEach((asset, idx) => {
+                        const coin = this.cryptoList.find(c => c.id === asset.id);
+                        const coinName = coin ? coin.name : '';
                         const isUpbitAsset = asset.exchange === 'upbit';
                         const isEditing = this.state.portfolio.editingIndex === idx;
                         const card = document.createElement('div');
@@ -785,11 +788,13 @@
                             card.onclick = () => this.changeChartSymbol(chartSymbol);
                             card.innerHTML = `
                                 <div class="flex justify-between items-center mb-1.5 border-b border-gray-800/30 pb-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-[12px] font-black text-white uppercase tracking-tighter">${asset.sub}</span>
-                                        <span class="text-[7px] px-1 py-0.2 rounded bg-gray-800 text-gray-500 font-bold border border-gray-700">${asset.exchange.toUpperCase()}</span>
+                                    <div class="flex items-center gap-1.5 overflow-hidden">
+                                        <span class="text-[11px] font-bold text-white uppercase tracking-tighter truncate">
+                                            ${asset.sub}(${coinName})
+                                        </span>
+                                        <span class="text-[7px] px-1 py-0.2 rounded bg-gray-800 text-gray-500 font-bold border border-gray-700 flex-shrink-0">${asset.exchange.toUpperCase()}</span>
                                     </div>
-                                    <div class="text-right flex items-center gap-2">
+                                    <div class="text-right flex items-center gap-2 flex-shrink-0">
                                         <div id="pct-val-${idx}" class="text-[12px] font-black italic opacity-50">loading...</div>
                                         <div id="profit-val-${idx}" class="text-[9px] font-bold italic opacity-50">loading...</div>
                                     </div>
@@ -986,8 +991,8 @@
                                 <img src="${logoUrl}" 
                                      class="w-5 h-5 rounded-full border border-gray-800 ${logoBg} p-0.5 flex-shrink-0" 
                                      onerror="JamApp.utils.handleImgError(this, '${coin.sub[0]}')">
-                                <span class="coin-symbol-text ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-gray-200'} uppercase">
-                                    ${coin.sub} <span class="text-[9px] text-gray-500 font-medium normal-case">(${coin.name})</span>
+                                <span class="coin-symbol-text ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-white'} uppercase">
+                                    ${coin.sub}(${coin.name})
                                 </span>
                             </div>
                             <div class="flex flex-col items-end gap-0">
