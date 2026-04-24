@@ -103,6 +103,29 @@
             box-shadow: 0 0 15px rgba(255, 0, 122, 0.3);
             background-color: #1c2128;
         }
+
+        /* 즐겨찾기 별 스타일 */
+        .star-icon {
+            color: #4b5563;
+            transition: all 0.2s;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .star-icon.active {
+            color: #FFD700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+        .star-icon:hover {
+            transform: scale(1.2);
+            color: #FFD700;
+        }
+
+        /* MY 탭 리스트 애니메이션 */
+        .fav-item-exit {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -164,7 +187,8 @@
                     <div class="p-2 border-b border-gray-800 bg-[#0d1117]">
                         <div class="flex bg-[#161b22] rounded-lg p-1 border border-gray-800">
                             <button onclick="JamApp.switchExchange('upbit')" id="extab-upbit" class="flex-1 py-1.5 text-[10px] font-black rounded-md transition-all text-gray-500 hover:text-white uppercase">Upbit</button>
-                            <button onclick="JamApp.switchExchange('binance')" id="extab-binance" class="flex-1 py-1.5 text-[10px] font-black rounded-md transition-all jam-bg text-white uppercase shadow-lg shadow-pink-500/20">Binance</button>
+                            <button onclick="JamApp.switchExchange('binance')" id="extab-binance" class="flex-1 py-1.5 text-[10px] font-black rounded-md transition-all text-gray-500 hover:text-white uppercase">Binance</button>
+                            <button onclick="JamApp.switchExchange('my')" id="extab-my" class="flex-1 py-1.5 text-[10px] font-black rounded-md transition-all text-gray-500 hover:text-white uppercase">MY</button>
                         </div>
                     </div>
                     <!-- Category Tabs -->
@@ -386,7 +410,8 @@
                 market: { 
                     current: "CRYPTO", 
                     activeSymbol: "BINANCE:BTCUSDT",
-                    activeExchange: "binance" // upbit | binance
+                    activeExchange: "binance", // upbit | binance | my
+                    favorites: JSON.parse(localStorage.getItem('jam_favorites')) || []
                 },
                 portfolio: {
                     slots: JSON.parse(localStorage.getItem('jam_data_v2')) || [[], [], []],
@@ -399,6 +424,41 @@
                 },
                 hubLinks: JSON.parse(localStorage.getItem('jam_hub_links')) || [],
                 system: { fixedRate: 1400, displayCurrency: 'USD' }
+            },
+
+            // [Favorites Global Sync Engine]
+            toggleFavorite(ex, sub, e) {
+                if (e) e.stopPropagation();
+                const favId = `${ex}-${sub}`;
+                const idx = this.state.market.favorites.indexOf(favId);
+                
+                if (idx > -1) {
+                    // Remove Favorite
+                    if (this.state.market.activeExchange === 'my') {
+                        const el = document.querySelector(`[data-fav-id="${favId}"]`);
+                        if (el) {
+                            el.classList.add('fav-item-exit');
+                            setTimeout(() => {
+                                const newIdx = this.state.market.favorites.indexOf(favId);
+                                if (newIdx > -1) this.state.market.favorites.splice(newIdx, 1);
+                                localStorage.setItem('jam_favorites', JSON.stringify(this.state.market.favorites));
+                                this.renderMarketList();
+                            }, 300);
+                        } else {
+                            this.state.market.favorites.splice(idx, 1);
+                            localStorage.setItem('jam_favorites', JSON.stringify(this.state.market.favorites));
+                        }
+                    } else {
+                        this.state.market.favorites.splice(idx, 1);
+                        localStorage.setItem('jam_favorites', JSON.stringify(this.state.market.favorites));
+                        this.renderMarketList();
+                    }
+                } else {
+                    // Add Favorite
+                    this.state.market.favorites.push(favId);
+                    localStorage.setItem('jam_favorites', JSON.stringify(this.state.market.favorites));
+                    this.renderMarketList();
+                }
             },
 
             // [Quick Deploy Engine]
@@ -455,7 +515,7 @@
                 },
 
                 updateHighlight() {
-                    document.querySelectorAll('[id^="search-res-"]').forEach(el => el.classList.remove('bg-pink-500/20', 'text-pink-500'));
+                    document.querySelectorAll('[id^=\"search-res-\"]').forEach(el => el.classList.remove('bg-pink-500/20', 'text-pink-500'));
                     const active = document.getElementById(`search-res-${this.activeIndex}`);
                     if (active) {
                         active.classList.add('bg-pink-500/20', 'text-pink-500');
@@ -750,22 +810,22 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onclick="event.stopPropagation(); JamApp.startEdit(${idx})" class="p-0.5 text-[7px] bg-gray-800 text-gray-500 hover:text-pink-500 rounded border border-gray-700">EDIT</button>
-                                    <button onclick="event.stopPropagation(); JamApp.removeAsset(${idx})" class="p-0.5 text-[7px] bg-gray-800 text-gray-500 hover:text-red-500 rounded border border-gray-700">✕</button>
+                                <div class=\"absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity\">
+                                    <button onclick=\"event.stopPropagation(); JamApp.startEdit(${idx})\" class=\"p-0.5 text-[7px] bg-gray-800 text-gray-500 hover:text-pink-500 rounded border border-gray-700\">EDIT</button>
+                                    <button onclick=\"event.stopPropagation(); JamApp.removeAsset(${idx})\" class=\"p-0.5 text-[7px] bg-gray-800 text-gray-500 hover:text-red-500 rounded border border-gray-700\">✕</button>
                                 </div>`;
                         } else {
                             card.innerHTML = `
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="text-[10px] font-black text-pink-500 uppercase tracking-widest">Adjust ${asset.sub}</span>
-                                    <div class="flex space-x-2">
-                                        <button onclick="event.stopPropagation(); JamApp.saveEdit(${idx})" class="text-[8px] text-green-500 font-black">SAVE</button>
-                                        <button onclick="event.stopPropagation(); JamApp.cancelEdit()" class="text-[8px] text-gray-500 font-black">ESC</button>
+                                <div class=\"flex justify-between items-start mb-2\">
+                                    <span class=\"text-[10px] font-black text-pink-500 uppercase tracking-widest\">Adjust ${asset.sub}</span>
+                                    <div class=\"flex space-x-2\">
+                                        <button onclick=\"event.stopPropagation(); JamApp.saveEdit(${idx})\" class=\"text-[8px] text-green-500 font-black\">SAVE</button>
+                                        <button onclick=\"event.stopPropagation(); JamApp.cancelEdit()\" class=\"text-[8px] text-gray-500 font-black\">ESC</button>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <input type="text" id="edit-price-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.buyPrice, 'num')}" class="w-full bg-[#1c2128] border border-gray-700 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500">
-                                    <input type="text" id="edit-qty-${idx}" oninput="JamApp.utils.formatInput(this)" value="${this.utils.fmt(asset.quantity, 'num')}" class="w-full bg-[#1c2128] border border-gray-700 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500">
+                                <div class=\"grid grid-cols-2 gap-2\">
+                                    <input type=\"text\" id=\"edit-price-${idx}\" oninput=\"JamApp.utils.formatInput(this)\" value=\"${this.utils.fmt(asset.buyPrice, 'num')}\" class=\"w-full bg-[#1c2128] border border-gray-700 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500\">
+                                    <input type=\"text\" id=\"edit-qty-${idx}\" oninput=\"JamApp.utils.formatInput(this)\" value=\"${this.utils.fmt(asset.quantity, 'num')}\" class=\"w-full bg-[#1c2128] border border-gray-700 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-pink-500\">
                                 </div>`;
                         }
                         container.appendChild(card);
@@ -813,12 +873,16 @@
                 },
                 formatInput(el) {
                     let val = el.value.replace(/,/g, '');
-                    if (val === "" || isNaN(val.replace('.', ''))) return;
-                    const parts = val.split(".");
-                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                    el.value = parts.join(".");
+                    if (val === \"\" || isNaN(val.replace('.', ''))) return;
+                    const parts = val.split(\".\");
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, \",\");
+                    el.value = parts.join(\".\");
                 },
-                unformat(str) { return parseFloat(str.replace(/,/g, '')) || 0; }
+                unformat(str) { return parseFloat(str.replace(/,/g, '')) || 0; },
+                handleImgError(img, initial) {
+                    img.onerror = null;
+                    img.src = `https://ui-avatars.com/api/?name=${initial}&background=random&color=fff&size=32`;
+                }
             },
 
             init() {
@@ -831,17 +895,20 @@
                 this.renderPortfolio();
                 this.changeChartSymbol(this.state.market.activeSymbol);
                 this.hub.render();
-                console.log("💎 JAM Engine v2.0 Live");
+                console.log(\"💎 JAM Engine v2.0 Live\");
             },
 
             switchExchange(ex) {
                 this.state.market.activeExchange = ex;
-                this.state.market.current = "CRYPTO"; // 전환 시 카테고리 초기화
-                this.setExchange(ex); // Quick Deploy 거래소 동기화
+                if (ex !== 'my') {
+                    this.state.market.current = \"CRYPTO\"; // 전환 시 카테고리 초기화
+                    this.setExchange(ex); // Quick Deploy 거래소 동기화
+                }
                 
                 // UI 버튼 업데이트
                 document.getElementById('extab-upbit').className = `flex-1 py-1.5 text-[10px] font-black rounded-md transition-all uppercase ${ex === 'upbit' ? 'jam-bg text-white shadow-lg shadow-pink-500/20' : 'text-gray-500 hover:text-white'}`;
                 document.getElementById('extab-binance').className = `flex-1 py-1.5 text-[10px] font-black rounded-md transition-all uppercase ${ex === 'binance' ? 'jam-bg text-white shadow-lg shadow-pink-500/20' : 'text-gray-500 hover:text-white'}`;
+                document.getElementById('extab-my').className = `flex-1 py-1.5 text-[10px] font-black rounded-md transition-all uppercase ${ex === 'my' ? 'jam-bg text-white shadow-lg shadow-pink-500/20' : 'text-gray-500 hover:text-white'}`;
                 
                 this.renderTabs();
                 this.renderMarketList();
@@ -852,6 +919,8 @@
                 container.innerHTML = '';
                 
                 const ex = this.state.market.activeExchange;
+                if (ex === 'my') return; 
+
                 const tabs = ex === 'upbit' ? ['CRYPTO'] : ['CRYPTO', 'COMMODITY', 'STOCK'];
                 
                 tabs.forEach(tab => {
@@ -877,48 +946,71 @@
                 
                 container.innerHTML = '';
                 
-                this.cryptoList
-                    .filter(c => c.category === this.state.market.current)
-                    .filter(c => ex === 'upbit' ? c.upbit : true) // 업비트 모드 시 필터링
+                let listToRender = [];
+                if (ex === 'my') {
+                    this.state.market.favorites.forEach(favId => {
+                        const [favEx, favSub] = favId.split('-');
+                        const coin = this.cryptoList.find(c => c.sub === favSub);
+                        if (coin) {
+                            listToRender.push({ ...coin, forcedExchange: favEx });
+                        }
+                    });
+                } else {
+                    listToRender = this.cryptoList
+                        .filter(c => c.category === this.state.market.current)
+                        .filter(c => ex === 'upbit' ? c.upbit : true)
+                        .map(c => ({ ...c, forcedExchange: ex }));
+                }
+
+                listToRender
                     .filter(c => c.sub.toLowerCase().includes(filter) || c.name.toLowerCase().includes(filter))
                     .forEach(coin => {
-                        const price = ex === 'upbit' ? this.state.portfolio.realtimePrices.upbit[coin.id] : this.state.portfolio.realtimePrices.binance[coin.id];
-                        const symbol = ex === 'upbit' ? '₩' : '$';
-                        const chartSymbol = ex === 'upbit' ? `UPBIT:${coin.sub}KRW` : coin.symbol;
+                        const currentEx = coin.forcedExchange;
+                        const price = currentEx === 'upbit' ? this.state.portfolio.realtimePrices.upbit[coin.id] : this.state.portfolio.realtimePrices.binance[coin.id];
+                        const symbol = currentEx === 'upbit' ? '₩' : '$';
+                        const chartSymbol = currentEx === 'upbit' ? `UPBIT:${coin.sub}KRW` : coin.symbol;
+                        const favId = `${currentEx}-${coin.sub}`;
+                        const isFav = this.state.market.favorites.includes(favId);
 
-                        // Logo URL & Style Logic
                         let logoUrl = `https://assets.coincap.io/assets/icons/${coin.sub.toLowerCase()}@2x.png`;
-                        let logoBg = "bg-gray-900";
+                        let logoBg = \"bg-gray-900\";
 
                         if (coin.category === 'STOCK' || coin.category === 'COMMODITY') {
                             const mappingId = this.tvLogoMapping[coin.sub];
                             if (mappingId) {
                                 logoUrl = `https://s3-symbol-logo.tradingview.com/${mappingId}--big.svg`;
-                                logoBg = "bg-white";
+                                logoBg = \"bg-white\";
                             }
                         }
                         
                         const div = document.createElement('div');
                         div.className = `coin-item-compact group`;
                         div.setAttribute('data-symbol', chartSymbol);
+                        div.setAttribute('data-fav-id', favId);
                         
                         div.onclick = (e) => {
                             const sym = e.currentTarget.getAttribute('data-symbol');
                             this.changeChartSymbol(sym);
-                            this.deploy.autoPopulate(coin); // Bidirectional Sync
+                            this.setExchange(currentEx); 
+                            this.deploy.autoPopulate(coin); 
                         };
                         
                         div.innerHTML = `
-                            <div class="coin-name-wrap">
-                                <img src="${logoUrl}" 
-                                     class="w-5 h-5 rounded-full border border-gray-800 ${logoBg} p-0.5 flex-shrink-0" 
-                                     onerror="JamApp.utils.handleImgError(this, '${coin.sub[0]}')">
-                                <span class="coin-symbol-text ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-gray-200'} uppercase">
-                                    ${coin.sub} <span class="text-[9px] text-gray-500 font-medium normal-case">(${coin.name})</span>
+                            <div class=\"coin-name-wrap\">
+                                <div onclick=\"JamApp.toggleFavorite('${currentEx}', '${coin.sub}', event)\" class=\"star-icon ${isFav ? 'active' : ''} mr-1\">
+                                    <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"2\">
+                                        <path d=\"M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.27 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z\"></path>
+                                    </svg>
+                                </div>
+                                <img src=\"${logoUrl}\" 
+                                     class=\"w-5 h-5 rounded-full border border-gray-800 ${logoBg} p-0.5 flex-shrink-0\" 
+                                     onerror=\"JamApp.utils.handleImgError(this, '${coin.sub[0]}')\">
+                                <span class=\"coin-symbol-text ${chartSymbol === this.state.market.activeSymbol ? 'text-pink-500' : 'text-gray-200'} uppercase\">
+                                    ${coin.sub} <span class=\"text-[9px] text-gray-500 font-medium normal-case\">(${coin.name})</span>
                                 </span>
                             </div>
-                            <div class="coin-price-text text-white tracking-tight">
-                                ${price > 0 ? symbol + this.utils.fmt(price, ex === 'upbit' ? 'krw' : 'cur') : '<span class="italic text-gray-600 animate-pulse text-[10px]">...</span>'}
+                            <div class=\"coin-price-text text-white tracking-tight\">
+                                ${price > 0 ? symbol + this.utils.fmt(price, currentEx === 'upbit' ? 'krw' : 'cur') : '<span class=\"italic text-gray-600 animate-pulse text-[10px]\">...</span>'}
                             </div>`;
                         container.appendChild(div);
                     });
@@ -935,7 +1027,7 @@
                 const coin = this.state.portfolio.selectedCoin;
                 const price = this.utils.unformat(document.getElementById('p-buy-price').value);
                 const qty = this.utils.unformat(document.getElementById('p-quantity').value);
-                if (!coin || price <= 0 || qty <= 0) return alert("Please select a coin and enter valid price/qty");
+                if (!coin || price <= 0 || qty <= 0) return alert(\"Please select a coin and enter valid price/qty\");
                 
                 this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].push({ 
                     id: coin.id, sub: coin.sub, buyPrice: price, quantity: qty, exchange: this.state.portfolio.inputExchange 
@@ -965,14 +1057,14 @@
                 this.save();
             },
 
-            removeAsset(idx) { if (confirm("Remove?")) { this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].splice(idx, 1); this.save(); } },
+            removeAsset(idx) { if (confirm(\"Remove?\")) { this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].splice(idx, 1); this.save(); } },
             save() { localStorage.setItem('jam_data_v2', JSON.stringify(this.state.portfolio.slots)); this.renderPortfolio(); },
             switchSlot(idx) { this.state.portfolio.currentSlot = idx; this.renderPortfolio(); },
 
             hub: {
                 save() { localStorage.setItem('jam_hub_links', JSON.stringify(JamApp.state.hubLinks)); },
                 addLink() {
-                    const n = prompt("Name:"); const u = prompt("URL:");
+                    const n = prompt(\"Name:\"); const u = prompt(\"URL:\");
                     if (n && u) { JamApp.state.hubLinks.push({ name: n, url: u.startsWith('http') ? u : 'https://'+u }); this.save(); this.render(); }
                 },
                 render() {
@@ -981,10 +1073,10 @@
                     document.querySelectorAll('.custom-hub-link').forEach(el => el.remove());
                     JamApp.state.hubLinks.forEach((l, i) => {
                         const a = document.createElement('a');
-                        a.href = l.url; a.target = "_blank"; a.className = "hub-btn py-2.5 rounded-xl text-[11px] font-black px-3 gap-2 custom-hub-link";
+                        a.href = l.url; a.target = \"_blank\"; a.className = \"hub-btn py-2.5 rounded-xl text-[11px] font-black px-3 gap-2 custom-hub-link\";
                         const d = new URL(l.url).hostname;
-                        a.innerHTML = `<img src="https://www.google.com/s2/favicons?domain=${d}&sz=32" class="w-4 h-4">${l.name.toUpperCase()}`;
-                        a.oncontextmenu = (e) => { e.preventDefault(); if (confirm("Remove?")) { JamApp.state.hubLinks.splice(i, 1); this.save(); this.render(); } };
+                        a.innerHTML = `<img src=\"https://www.google.com/s2/favicons?domain=${d}&sz=32\" class=\"w-4 h-4\">${l.name.toUpperCase()}`;
+                        a.oncontextmenu = (e) => { e.preventDefault(); if (confirm(\"Remove?\")) { JamApp.state.hubLinks.splice(i, 1); this.save(); this.render(); } };
                         c.insertBefore(a, c.lastElementChild);
                     });
                 }
@@ -992,7 +1084,6 @@
         };
 
         window.onload = () => JamApp.init();
-        // 메모: 코모디티, 주식 가격 바로반영 업데이트
-        </script>
-        </body>
-        </html>
+    </script>
+</body>
+</html>
