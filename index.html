@@ -262,7 +262,7 @@
 
                     <div class="flex-grow overflow-y-auto custom-scrollbar p-3 space-y-4">
                         <!-- Add Form -->
-                        <div class="space-y-2 p-3 bg-[#0d1117] rounded-xl border border-gray-800">
+                        <div class="space-y-2 p-3 bg-[#0d1117] rounded-xl border border-gray-800 relative">
                             <div class="flex justify-between items-center mb-1">
                                 <p class="text-[9px] font-black text-gray-500 uppercase tracking-wider">Quick Deploy</p>
                                 <div class="flex bg-[#161b22] rounded-md p-0.5 border border-gray-800">
@@ -270,7 +270,19 @@
                                     <button onclick="JamApp.setExchange('binance')" id="ex-binance" class="px-3 py-0.5 text-[7px] font-black rounded transition-all jam-bg text-white uppercase">BN</button>
                                 </div>
                             </div>
-                            <select id="p-coin-select" class="w-full bg-[#161b22] border border-gray-700 rounded-lg px-2 py-2 text-[10px] font-bold focus:outline-none focus:border-pink-500"></select>
+                            
+                            <!-- Searchable Combo-box -->
+                            <div class="relative group/search">
+                                <input type="text" id="p-coin-search" autocomplete="off" placeholder="Search Ticker..." 
+                                       class="w-full bg-[#161b22] border border-gray-700 rounded-lg px-3 py-2 text-[10px] font-bold focus:outline-none focus:border-pink-500 transition-all"
+                                       onfocus="JamApp.deploy.showResults()" 
+                                       oninput="JamApp.deploy.filterResults(this.value)"
+                                       onkeydown="JamApp.deploy.handleKey(event)">
+                                <div id="p-search-results" class="absolute left-0 right-0 top-full mt-1 bg-[#1c2128] border border-gray-700 rounded-lg shadow-2xl z-[60] max-h-48 overflow-y-auto hidden custom-scrollbar">
+                                    <!-- Results injected here -->
+                                </div>
+                            </div>
+
                             <div class="grid grid-cols-2 gap-2">
                                 <div class="relative">
                                     <span id="unit-price" class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] font-bold text-gray-500">$</span>
@@ -382,10 +394,98 @@
                     prevPrices: { upbit: {}, binance: {} },
                     editingIndex: null,
                     inputExchange: 'binance',
-                    currentSlot: 0
+                    currentSlot: 0,
+                    selectedCoin: null // Track selected coin for Quick Deploy
                 },
                 hubLinks: JSON.parse(localStorage.getItem('jam_hub_links')) || [],
                 system: { fixedRate: 1400, displayCurrency: 'USD' }
+            },
+
+            // [Quick Deploy Engine]
+            deploy: {
+                activeIndex: -1,
+                filteredList: [],
+
+                showResults() {
+                    this.filterResults(document.getElementById('p-coin-search').value);
+                },
+
+                filterResults(query) {
+                    const res = document.getElementById('p-search-results');
+                    const q = query.toLowerCase();
+                    const ex = JamApp.state.portfolio.inputExchange;
+                    
+                    this.filteredList = JamApp.cryptoList
+                        .filter(c => ex === 'upbit' ? c.upbit : true)
+                        .filter(c => c.sub.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
+
+                    if (this.filteredList.length === 0) {
+                        res.classList.add('hidden');
+                        return;
+                    }
+
+                    this.activeIndex = -1;
+                    res.innerHTML = this.filteredList.map((c, i) => `
+                        <div onclick="JamApp.deploy.select(${i})" id="search-res-${i}" class="px-3 py-2 text-[10px] font-bold cursor-pointer hover:bg-pink-500/10 border-b border-gray-800/50 flex justify-between items-center transition-colors">
+                            <span class="text-white">${c.sub} <span class="text-gray-500 font-medium">(${c.name})</span></span>
+                            <span class="text-[8px] px-1 rounded bg-gray-800 text-gray-400">${c.category}</span>
+                        </div>
+                    `).join('');
+                    res.classList.remove('hidden');
+                },
+
+                handleKey(e) {
+                    const res = document.getElementById('p-search-results');
+                    if (res.classList.contains('hidden')) return;
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.activeIndex = Math.min(this.activeIndex + 1, this.filteredList.length - 1);
+                        this.updateHighlight();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.activeIndex = Math.max(this.activeIndex - 1, 0);
+                        this.updateHighlight();
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (this.activeIndex >= 0) this.select(this.activeIndex);
+                    } else if (e.key === 'Escape') {
+                        res.classList.add('hidden');
+                    }
+                },
+
+                updateHighlight() {
+                    document.querySelectorAll('[id^="search-res-"]').forEach(el => el.classList.remove('bg-pink-500/20', 'text-pink-500'));
+                    const active = document.getElementById(`search-res-${this.activeIndex}`);
+                    if (active) {
+                        active.classList.add('bg-pink-500/20', 'text-pink-500');
+                        active.scrollIntoView({ block: 'nearest' });
+                    }
+                },
+
+                select(idx) {
+                    const coin = this.filteredList[idx];
+                    this.autoPopulate(coin);
+                    document.getElementById('p-search-results').classList.add('hidden');
+                    
+                    // Sync to Chart
+                    const ex = JamApp.state.portfolio.inputExchange;
+                    const chartSym = ex === 'upbit' ? `UPBIT:${coin.sub}KRW` : coin.symbol;
+                    JamApp.changeChartSymbol(chartSym);
+                },
+
+                autoPopulate(coin) {
+                    JamApp.state.portfolio.selectedCoin = coin;
+                    const input = document.getElementById('p-coin-search');
+                    if (input) {
+                        input.value = `${coin.sub} (${coin.name})`;
+                        input.classList.add('border-pink-500');
+                        setTimeout(() => input.classList.remove('border-pink-500'), 1000);
+                    }
+                    
+                    // 평단가 필드에 포커스
+                    document.getElementById('p-buy-price').focus();
+                }
             },
 
             // [Initial Price Sync Engine]
@@ -728,7 +828,6 @@
                 this.ws.init();
                 this.renderTabs();
                 this.renderMarketList();
-                this.populateCoinSelect();
                 this.renderPortfolio();
                 this.changeChartSymbol(this.state.market.activeSymbol);
                 this.hub.render();
@@ -738,6 +837,7 @@
             switchExchange(ex) {
                 this.state.market.activeExchange = ex;
                 this.state.market.current = "CRYPTO"; // 전환 시 카테고리 초기화
+                this.setExchange(ex); // Quick Deploy 거래소 동기화
                 
                 // UI 버튼 업데이트
                 document.getElementById('extab-upbit').className = `flex-1 py-1.5 text-[10px] font-black rounded-md transition-all uppercase ${ex === 'upbit' ? 'jam-bg text-white shadow-lg shadow-pink-500/20' : 'text-gray-500 hover:text-white'}`;
@@ -805,6 +905,7 @@
                         div.onclick = (e) => {
                             const sym = e.currentTarget.getAttribute('data-symbol');
                             this.changeChartSymbol(sym);
+                            this.deploy.autoPopulate(coin); // Bidirectional Sync
                         };
                         
                         div.innerHTML = `
@@ -831,17 +932,21 @@
             },
 
             addAsset() {
-                const coinData = document.getElementById('p-coin-select').value;
+                const coin = this.state.portfolio.selectedCoin;
                 const price = this.utils.unformat(document.getElementById('p-buy-price').value);
                 const qty = this.utils.unformat(document.getElementById('p-quantity').value);
-                if (!coinData || price <= 0 || qty <= 0) return alert("Invalid inputs");
-                const info = JSON.parse(coinData);
+                if (!coin || price <= 0 || qty <= 0) return alert("Please select a coin and enter valid price/qty");
+                
                 this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].push({ 
-                    id: info.id, sub: info.sub, buyPrice: price, quantity: qty, exchange: this.state.portfolio.inputExchange 
+                    id: coin.id, sub: coin.sub, buyPrice: price, quantity: qty, exchange: this.state.portfolio.inputExchange 
                 });
                 this.save();
+                
+                // Reset fields
+                document.getElementById('p-coin-search').value = '';
                 document.getElementById('p-buy-price').value = '';
                 document.getElementById('p-quantity').value = '';
+                this.state.portfolio.selectedCoin = null;
             },
 
             startEdit(idx) { 
@@ -863,17 +968,6 @@
             removeAsset(idx) { if (confirm("Remove?")) { this.state.portfolio.slots[this.state.portfolio.currentSlot || 0].splice(idx, 1); this.save(); } },
             save() { localStorage.setItem('jam_data_v2', JSON.stringify(this.state.portfolio.slots)); this.renderPortfolio(); },
             switchSlot(idx) { this.state.portfolio.currentSlot = idx; this.renderPortfolio(); },
-            
-            populateCoinSelect() {
-                const s = document.getElementById('p-coin-select');
-                s.innerHTML = '<option value="" disabled selected>Select Coin</option>';
-                this.cryptoList.forEach(c => {
-                    const o = document.createElement('option');
-                    o.value = JSON.stringify({id: c.id, sub: c.sub});
-                    o.innerText = `${c.sub} - ${c.name}`;
-                    s.appendChild(o);
-                });
-            },
 
             hub: {
                 save() { localStorage.setItem('jam_hub_links', JSON.stringify(JamApp.state.hubLinks)); },
