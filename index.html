@@ -74,6 +74,20 @@
         .jam-accent { color: #FF007A; text-shadow: 0 0 15px rgba(255, 0, 122, 0.4); }
         .jam-bg { background-color: #FF007A; }
         .tab-active { color: #FF007A; background-color: #1c2128; box-shadow: inset 0 -2px 0 #FF007A; }
+
+        /* Ticker Marquee Animation */
+        @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-ticker {
+            display: flex;
+            width: max-content;
+            animation: ticker-scroll 30s linear infinite;
+        }
+        .animate-ticker:hover {
+            animation-play-state: paused;
+        }
         
         /* 수익/손실 네온 효과 */
         .profit-glow { color: #00E5FF !important; text-shadow: 0 0 10px rgba(0, 229, 255, 0.6); font-weight: 800; }
@@ -116,25 +130,21 @@
     <!-- ==========================================
          [1] TOP TICKER SECTION
          ========================================== -->
-    <div class="w-full border-b border-gray-800 bg-[#0d1117]">
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-        {
-            "symbols": [
-                {"proName": "BINANCE:BTCUSDT", "title": "BTC"},
-                {"proName": "BINANCE:ETHUSDT", "title": "ETH"},
-                {"proName": "BINANCE:SOLUSDT", "title": "SOL"},
-                {"proName": "BINANCE:XRPUSDT", "title": "XRP"},
-                {"proName": "BINANCE:DOGEUSDT", "title": "DOGE"},
-                {"proName": "BINANCE:ADAUSDT", "title": "ADA"},
-                {"proName": "BINANCE:LINKUSDT", "title": "LINK"}
-            ],
-            "showSymbolLogo": true,
-            "colorTheme": "dark",
-            "isTransparent": true,
-            "displayMode": "adaptive",
-            "locale": "ko"
-        }
-        </script>
+    <div class="w-full border-b border-gray-800 bg-[#0d1117] h-[46px] flex items-center overflow-hidden">
+        <div class="animate-ticker">
+            <!-- Content Block 1 -->
+            <div class="flex items-center space-x-16 px-8">
+                <span class="text-white font-bold whitespace-nowrap text-[13px]">🚀 <span class="text-[#00E5FF]">CRYPTO JAM</span>: The Ultimate Multi-Asset Trading Terminal</span>
+                <span class="text-white font-bold whitespace-nowrap text-[13px]">📱 <span class="text-[#FF3860]">Crypto Jam Mobile App</span> <span class="text-[#FF3860]">Coming Soon</span>! 언제 어디서나 자산을 관리하세요.</span>
+                <span class="text-white font-bold whitespace-nowrap text-[13px]">⚡ <span class="text-[#00E5FF]">Real-Time Engine Live</span>: Upbit & Binance 데이터 완벽 동기화</span>
+            </div>
+            <!-- Content Block 2 (Duplicate for Loop) -->
+            <div class="flex items-center space-x-16 px-8">
+                <span class="text-white font-bold whitespace-nowrap text-[13px]">🚀 <span class="text-[#00E5FF]">CRYPTO JAM</span>: The Ultimate Multi-Asset Trading Terminal</span>
+                <span class="text-white font-bold whitespace-nowrap text-[13px]">📱 <span class="text-[#FF3860]">Crypto Jam Mobile App</span> <span class="text-[#FF3860]">Coming Soon</span>! 언제 어디서나 자산을 관리하세요.</span>
+                <span class="text-white font-bold whitespace-nowrap text-[13px]">⚡ <span class="text-[#00E5FF]">Real-Time Engine Live</span>: Upbit & Binance 데이터 완벽 동기화</span>
+            </div>
+        </div>
     </div>
 
     <!-- ==========================================
